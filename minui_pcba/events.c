@@ -20,6 +20,7 @@
 #include <dirent.h>
 #include <sys/poll.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include <linux/input.h>
 

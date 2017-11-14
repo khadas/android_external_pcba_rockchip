@@ -140,6 +140,7 @@ void* hdmi_test(void* argv)
 	int hpdstate, hpdstate_last;
 	char sound[256];
 	int ret;
+	struct testcase_info tc_info;
 	
 	hpdstate = HDMI_REMOVE;
 	hpdstate_last = hpdstate;
@@ -158,7 +159,7 @@ void* hdmi_test(void* argv)
 			if(hpdstate == HDMI_INSERT) {
 				// Test FB
 				LOG("[%s] start test screen\n", __FUNCTION__);
-				screen_test(NULL);
+				screen_test(&tc_info);
 				// Test audio
 				LOG("[%s] start test audio\n", __FUNCTION__);
 				hdmi_audio_test(sound);

@@ -802,7 +802,7 @@ bool mzExtractZipEntryToFile(const ZipArchive *pArchive,
     const ZipEntry *pEntry, int fd)
 {
     bool ret = mzProcessZipEntryContents(pArchive, pEntry, writeProcessFunction,
-                                         (void*)fd);
+                                         (void*)(long)fd);
     if (!ret) {
         LOGE("Can't extract entry to file.\n");
         return false;

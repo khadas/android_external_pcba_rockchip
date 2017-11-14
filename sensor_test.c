@@ -288,7 +288,7 @@ static int init_sensor_test(struct sensor_info *psi)
 	return count;
 }
 
-void *all_sensor_test(void *argv)
+int all_sensor_test(void *argv)
 {
 	int pipe_fd = -1;
 	struct timespec now, prev;
@@ -495,6 +495,6 @@ void *all_sensor_test(void *argv)
 			free(s_sensor_info[i].data);
 	}
 
-	return NULL;
+	return 0;
 }
 

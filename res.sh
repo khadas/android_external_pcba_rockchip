@@ -115,12 +115,45 @@ else
 fi
 
 if [ $BT_BLUEDROID = "true" ] ; then
+	if [ -e "$PRODUCT_OUT/vendor/etc" ];then
+		cp $PRODUCT_OUT/vendor/etc/ $PRODUCT_OUT/recovery/root/vendor/ -a
+	fi
 	if [ $TARGET_ARCH = "arm64" ] ; then
 	    if [ -e "$PRODUCT_OUT/obj_arm/lib/bluetooth.default.so" ] ; then
 	    cp $PRODUCT_OUT/obj_arm/lib/bluetooth.default.so $PRODUCT_OUT/recovery/root/system/lib/hw/
         fi
         if [ -e "$PRODUCT_OUT/obj_arm/lib/libbluetooth_mtk.so" ] ; then
         cp $PRODUCT_OUT/obj_arm/lib/libbluetooth_mtk.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/android.hardware.bluetooth@1.0.so" ] ; then
+	cp $PRODUCT_OUT/obj_arm/lib/android.hardware.bluetooth@1.0.so $PRODUCT_OUT/recovery/root/system/lib/
+	fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/android.hidl.base@1.0.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/android.hidl.base@1.0.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libaudiomanager.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libaudiomanager.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libtinyxml2.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libtinyxml2.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libprotobuf-cpp-lite.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libprotobuf-cpp-lite.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libhidltransport.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libhidltransport.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libhwbinder.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libhwbinder.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libhidlbase.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libhidlbase.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libchrome.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libchrome.so $PRODUCT_OUT/recovery/root/system/lib/
+        fi
+	if [ -e "$PRODUCT_OUT/obj_arm/lib/libaudioclient.so" ] ; then
+        cp $PRODUCT_OUT/obj_arm/lib/libaudioclient.so $PRODUCT_OUT/recovery/root/system/lib/
         fi
         if [ -e "$PRODUCT_OUT/obj_arm/lib/libbt-hci.so" ] ; then
         cp $PRODUCT_OUT/obj_arm/lib/libbt-hci.so $PRODUCT_OUT/recovery/root/system/lib/
@@ -373,14 +406,14 @@ fi
 if [ -e "$PRODUCT_OUT/system/bin/sensor_test" ] ; then
 cp $PRODUCT_OUT/system/bin/sensor_test $PRODUCT_OUT/recovery/root/system/bin/
 fi
-if [ -e "$PRODUCT_OUT/system/lib/libmllite.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libmllite.so $PRODUCT_OUT/recovery/root/system/lib/
+if [ -e "$PRODUCT_OUT/vendor/lib/libmllite.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libmllite.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
-if [ -e "$PRODUCT_OUT/system/lib/libmplmpu.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libmplmpu.so $PRODUCT_OUT/recovery/root/system/lib/
+if [ -e "$PRODUCT_OUT/vendor/lib/libmplmpu.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libmplmpu.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
-if [ -e "$PRODUCT_OUT/system/lib/libinvensense_hal.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libinvensense_hal.so $PRODUCT_OUT/recovery/root/system/lib/
+if [ -e "$PRODUCT_OUT/vendor/lib/libinvensense_hal.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libinvensense_hal.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 if [ -e "$PRODUCT_OUT/system/lib/modules/inv-mpu-iio.ko" ] ; then
 mkdir -p $PRODUCT_OUT/recovery/root/system/lib/modules
@@ -395,6 +428,11 @@ cp $PRODUCT_OUT/system/lib/libbase.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 
 #for camera test
-if [ -e "$PRODUCT_OUT/system/lib/libion.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libion.so $PRODUCT_OUT/recovery/root/system/lib/
+if [ -e "$PRODUCT_OUT/vendor/lib/libion.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libion.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
+
+if [ -e "$PRODUCT_OUT/system/lib/libvndksupport.so" ] ; then
+cp $PRODUCT_OUT/system/lib/libvndksupport.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+

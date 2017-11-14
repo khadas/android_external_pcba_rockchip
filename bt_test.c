@@ -812,7 +812,210 @@ int Sofia3gr_bluedroid_test()//add by wjh
 	}        
 	return ret;
 }
+#define BLUETOOTH_TTY_TEST 1
 
+int uart_fd = -1;
+struct termios termios;
+unsigned char  buffer[1024];
+int ttytestResult= -1;
+unsigned char hci_reset[] = { 0x01, 0x03, 0x0c, 0x00 };
+void
+init_uart()
+{
+	tcflush(uart_fd, TCIOFLUSH);
+	int n = tcgetattr(uart_fd, &termios);
+
+#ifndef __CYGWIN__
+	cfmakeraw(&termios);
+#else
+	termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
+                | INLCR | IGNCR | ICRNL | IXON);
+	termios.c_oflag &= ~OPOST;
+	termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	termios.c_cflag &= ~(CSIZE | PARENB);
+	termios.c_cflag |= CS8;
+#endif
+
+	//termios.c_cflag |= CRTSCTS;
+	tcsetattr(uart_fd, TCSANOW, &termios);
+	tcflush(uart_fd, TCIOFLUSH);
+	tcsetattr(uart_fd, TCSANOW, &termios);
+	tcflush(uart_fd, TCIOFLUSH);
+	tcflush(uart_fd, TCIOFLUSH);
+	cfsetospeed(&termios, B115200);
+	cfsetispeed(&termios, B115200);
+	tcsetattr(uart_fd, TCSANOW, &termios);
+}
+
+void
+dump(unsigned char  *out, int len)
+{
+	int i;
+
+	for (i = 0; i < len; i++) {
+		if (i && !(i % 16)) {
+			fprintf(stderr, "\n");
+		}
+
+		printf("%02x ", out[i]);
+	}
+
+	printf( "\n");
+}
+
+void
+read_event(int fd, unsigned char  *buffer)
+{
+	int i = 0;
+	int len = 3;
+	int count;
+	printf("read_event \n");
+
+	while ((count = read(fd, &buffer[i], len)) < len) {
+		printf("count %d \n",count);
+		i += count;
+		len -= count;
+	}
+
+	i += count;
+	len = buffer[2];
+
+	while ((count = read(fd, &buffer[i], len)) < len) {
+		i += count;
+		len -= count;
+	}
+
+	//if (debug)
+		{
+		count += i;
+
+		printf("received %d\n", count);
+		dump(buffer, count);
+	}
+	ttytestResult = 0;
+	printf("bt ttytest read_event succ\n");
+}
+
+void
+hci_send_buf(unsigned char  *buf, int len)
+{
+
+    printf("writing\n");
+	dump(buf, len);
+
+
+	int writelen=write(uart_fd, buf, len);
+	printf("writelen %d\n",writelen);
+}
+void
+init_uart();
+
+
+void
+expired(int sig)
+{
+    ttytestResult = -1;
+	printf("bt ttytest expired\n");
+}
+
+void
+proc_reset()
+{
+	signal(SIGALRM, expired);
+
+	printf( "proc_reset");
+	alarm(8);
+
+	hci_send_buf(hci_reset, sizeof(hci_reset));
+
+	read_event(uart_fd, buffer);
+
+	alarm(0);
+}
+
+#define CONF_COMMENT '#'
+#define CONF_DELIMITERS " =\n\r\t"
+#define CONF_VALUES_DELIMITERS "=\n\r\t"
+#define CONF_MAX_LINE_LEN 255
+void get_tty_conf(const char *p_path,char *ttyPort)
+{
+    FILE    *p_file;
+    char    *p_name;
+    char    *p_value;
+    char    line[CONF_MAX_LINE_LEN+1]; /* add 1 for \0 char */
+
+    printf( "Attempt to load conf from %s", p_path);
+
+    if ((p_file = fopen(p_path, "r")) != NULL)
+    {
+        /* read line by line */
+        while (fgets(line, CONF_MAX_LINE_LEN+1, p_file) != NULL)
+        {
+            if (line[0] == CONF_COMMENT)
+                continue;
+
+            p_name = strtok(line, CONF_DELIMITERS);
+
+            if (NULL == p_name)
+            {
+                continue;
+            }
+
+            p_value = strtok(NULL, CONF_DELIMITERS);
+
+            if (NULL == p_value)
+            {
+                printf( "vnd_load_conf: missing value for name: %s", p_name);
+                continue;
+            }
+
+            if (strcmp("UartPort", (const char *)p_name) == 0){
+				printf("get ttyPort %s", p_value);
+				strcpy(ttyPort,p_value);
+				fclose(p_file);
+				return;
+            }
+			
+        }
+
+        fclose(p_file);
+    }
+    else
+    {
+        printf( "vnd_load_conf file >%s< not found", p_path);
+    }
+	strcpy(ttyPort,"/dev/ttyS0");
+}
+
+
+static void ttytestThread(void *param)
+{
+	char ttyPort[30]={0};
+	__system("echo 1 > /sys/class/rfkill/rfkill0/state");
+	sleep(1);
+    get_tty_conf("/vendor/etc/bluetooth/bt_vendor.conf",ttyPort);
+	if ((uart_fd = open(ttyPort, O_RDWR | O_NOCTTY)) == -1) {
+		printf( "port could not be opened, error %d\n", errno);
+	}
+
+	init_uart();
+	proc_reset();
+}
+
+int bluetoothtty_test()
+{
+    int i;
+	
+	pthread_t thread_id;
+	pthread_create(&thread_id, NULL,(void*)ttytestThread, NULL);
+	for(i=10;i>0;i--){
+		sleep(1);
+		if(ttytestResult == 0)
+			return 0;
+	}
+	return -1;	
+
+}
 
 void *bt_test(void *argv)
 {
@@ -824,8 +1027,8 @@ void *bt_test(void *argv)
 		tc_info->y  = get_cur_print_y();
 
 	ui_print_xy_rgba(0,tc_info->y,255,255,0,255,"%s:[%s..] \n",PCBA_BLUETOOTH,PCBA_TESTING);
-#ifdef SOFIA3GR_PCBA
-	ret = Sofia3gr_bluedroid_test();
+#ifdef BLUETOOTH_TTY_TEST
+	ret = bluetoothtty_test();
 #else
 	switch (get_chip_type()) {
     case RK903:

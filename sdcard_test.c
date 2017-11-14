@@ -30,7 +30,7 @@ void *sdcard_test(void *argv)
 
 	ui_print_xy_rgba(0, y, 255, 255, 0, 255, "%s\n", PCBA_SDCARD);
 
-#if defined(RK3288_PCBA) || defined(RK3368_PCBA)
+#if defined(RK3288_PCBA)
 	ret = __system("busybox chmod 777 /res/emmctester.sh");
 #else
 	ret = __system("busybox chmod 777 /res/mmctester.sh");
@@ -39,7 +39,7 @@ void *sdcard_test(void *argv)
 	if (ret)
 		LOG("chmod mmctester.sh failed :%d\n", ret);
 
-#if defined(RK3288_PCBA) || defined(RK3368_PCBA)
+#if defined(RK3288_PCBA)
 	ret = __system("/res/emmctester.sh");
 #else
 	ret = __system("/res/mmctester.sh");

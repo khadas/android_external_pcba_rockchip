@@ -54,7 +54,7 @@ void * fm_test(void * argv)
 			char *temp;			
 			char *channel_counts = NULL;
 			char *channel_fq = NULL;
-			int channelCounts = NULL;			
+			int channelCounts = 0;			
 			char delims[] = "OK\n";
 			char results[SCAN_RESULTS_LENGTH];
 			char results2[SCAN_RESULTS_LENGTH];

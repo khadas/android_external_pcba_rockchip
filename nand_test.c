@@ -25,9 +25,10 @@ void *nand_test(void *argv)
 	stream = fopen("proc/rknand", "r+");/*open nandflash message*/
 	if (!stream) {
 		perror("fopen");
+		ui_print_xy_rgba(0, y, 0, 255, 0, 255, "%s:[%s] \n", PCBA_NAND,
+			 PCBA_FAILED);
 		return argv;
 	}
-
 	do {
 		if (fgets(msg, 1024, stream) == NULL)
 

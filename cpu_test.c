@@ -315,7 +315,7 @@ static float angle_pitch_to_angle(float pitch, float accData)
 void *add_use_cpu(void)
 {
 	int ret;
-	FILE *fd_mma = NULL;
+	int fd_mma = -1;
 	struct sensor_axis acc = { 90000, 30000, 4000 };
 	struct sensor_axis angle = { 6000, 9000, 20000 };
 	int sample_rate = MMA8452_RATE_12P5;
@@ -326,7 +326,7 @@ void *add_use_cpu(void)
 	int curr_angle[2], old_angle, needcheck = 0;
 
 	fd_mma = open("/dev/accel", O_RDWR);
-	if (fd_mma == NULL) {
+	if (fd_mma == -1) {
 		printf("%s:open:  - err\r\n", __func__);
 		return 0;
 	}

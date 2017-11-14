@@ -14,6 +14,7 @@
 #include "language.h"
 #include "common.h"
 #include "extra-functions.h"
+#include "script.h"
 
 #define AUDIO_HW_OUT_PERIOD_MULT 8 // (8 * 128 = 1024 frames)
 #define AUDIO_HW_OUT_PERIOD_CNT 4

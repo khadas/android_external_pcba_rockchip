@@ -602,7 +602,7 @@ typedef struct ionbuf {
     int ion_fd;
     int buf_fd;
     unsigned int len;
-    struct ion_handle *handle;
+    ion_user_handle_t handle;
     unsigned int phy;
     unsigned int *vir;
 } ionbuf_t;
@@ -662,9 +662,9 @@ int freebuf_ion(ionbuf_t *ionbuf)
         ionbuf->buf_fd = -1;
     }
 
-    if (ionbuf->handle != NULL) {
+    if (ionbuf->handle != -1) {
         ion_free(ionbuf->ion_fd, ionbuf->handle);
-        ionbuf->handle = NULL;
+        ionbuf->handle = -1;
     }
 
     if (ionbuf->ion_fd>0) {
@@ -844,7 +844,7 @@ int startCameraTest(){
 	
 	ionbuf.ion_fd = -1;
 	ionbuf.buf_fd = -1;
-	ionbuf.handle = NULL;
+	ionbuf.handle = -1;
 	ionbuf.phy = 0;
 	ionbuf.vir = NULL;
 	ionbuf.len = ION_LEN;
@@ -912,8 +912,9 @@ int startCameraTest(){
 		printf("extdev_init failed.\n");
 		goto Next;
 	}
-	phy_addr = (unsigned int)ionbuf.phy;
-	marvin_config((MrvAllRegister_t*)regbase, phy_addr);
+	
+	phy_addr = (unsigned int *)ionbuf.phy;
+	marvin_config((MrvAllRegister_t*)regbase, (unsigned int )phy_addr);
 	marvin_start((MrvAllRegister_t*)regbase);
 	printf("%s %d  hcc\n",__FUNCTION__,__LINE__);  
 	   
@@ -1069,7 +1070,7 @@ Next:
 	
 		ionbuf.ion_fd = -1;
 		ionbuf.buf_fd = -1;
-		ionbuf.handle = NULL;
+		ionbuf.handle = -1;
 		ionbuf.phy = 0;
 		ionbuf.vir = NULL;
 		ionbuf.len = ION_LEN;
@@ -1136,8 +1137,8 @@ Next:
 			printf("extdev_init failed.\n");
 			goto end;
 		}
-		phy_addr = (unsigned int)ionbuf.phy;
-		marvin_config((MrvAllRegister_t*)regbase, phy_addr);
+		phy_addr = (unsigned int *)ionbuf.phy;
+		marvin_config((MrvAllRegister_t*)regbase, (unsigned int)phy_addr);
 		marvin_start((MrvAllRegister_t*)regbase);
 		printf("%s %d  hcc\n",__FUNCTION__,__LINE__);  
 
