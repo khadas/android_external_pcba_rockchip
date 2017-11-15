@@ -33,6 +33,7 @@
 #include "alsa_audio.h"
 #include "extra-functions.h"
 #include "script.h"
+#include "test_case.h"
 
 #ifdef DEBUG
 #define LOG(x...) printf(x)
