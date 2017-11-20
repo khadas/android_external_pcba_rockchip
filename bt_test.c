@@ -13,14 +13,19 @@
 
 #include <cutils/log.h>
 #include <cutils/properties.h>
+#include "common.h"
+#include "language.h"
+#include "test_case.h"
 
+#define BLUETOOTH_TTY_TEST
+//#define SOFIA3GR_PCBA
+//#define BLUEDROID_TEST
+
+#ifdef BLUEDROID_TEST
 #include "libbluetooth/bluetooth/bluetooth.h"
 #include "libbluetooth/bluetooth/hci.h"
 #include "libbluetooth/bluetooth/hci_lib.h"
 
-#include "common.h"
-#include "language.h"
-#include "test_case.h"
 #ifndef HCI_DEV_ID
 #define HCI_DEV_ID 0
 #endif
@@ -746,6 +751,7 @@ static int bt_test_bluedroid()
     return ret;
 }
 
+#elif defined(SOFIA3GR_PCBA)
 int check_Sofia3gr_bluedroid_test()//add by wjh
 {	
 	LOG("Sofia3gr_bluedroid_test: start check bdt test result.\n");
@@ -812,8 +818,8 @@ int Sofia3gr_bluedroid_test()//add by wjh
 	}        
 	return ret;
 }
-#define BLUETOOTH_TTY_TEST 1
 
+#else
 int uart_fd = -1;
 struct termios termios;
 unsigned char  buffer[1024];
@@ -1016,6 +1022,7 @@ int bluetoothtty_test()
 	return -1;	
 
 }
+#endif
 
 void *bt_test(void *argv)
 {
@@ -1027,7 +1034,9 @@ void *bt_test(void *argv)
 		tc_info->y  = get_cur_print_y();
 
 	ui_print_xy_rgba(0,tc_info->y,255,255,0,255,"%s:[%s..] \n",PCBA_BLUETOOTH,PCBA_TESTING);
-#ifdef BLUETOOTH_TTY_TEST
+#if defined(SOFIA3GR_PCBA)
+       ret = Sofia3gr_bluedroid_test();
+#elif defined (BLUETOOTH_TTY_TEST)
 	ret = bluetoothtty_test();
 #else
 	switch (get_chip_type()) {
@@ -1055,5 +1064,4 @@ void *bt_test(void *argv)
     }
 	return 0;
 }
-
 

@@ -236,11 +236,12 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion
+LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion librkwifi-ctrl
 LOCAL_STATIC_LIBRARIES += libm
 LOCAL_STATIC_LIBRARIES += libmincrypt
-LOCAL_STATIC_LIBRARIES += libminuitwrp libpixelflinger_twrp libpng libjpegtwrp libbluetooth
+LOCAL_STATIC_LIBRARIES += libminuitwrp libpixelflinger_twrp libpng libjpegtwrp
 LOCAL_STATIC_LIBRARIES += libmtdutils liblog
+#LOCAL_STATIC_LIBRARIES += libbluetooth
 
 LOCAL_C_INCLUDES += system/core/libpixelflinger/include
 
@@ -249,5 +250,5 @@ include $(commands_recovery_local_path)/minui_pcba/Android.mk
 include $(commands_recovery_local_path)/libpixelflinger/Android.mk
 include $(commands_recovery_local_path)/libjpegtwrp/Android.mk
 include $(commands_recovery_local_path)/minziptwrp/Android.mk
-include $(commands_recovery_local_path)/libbluetooth/Android.mk
-include $(commands_recovery_local_path)/bluedroidtest/Android.mk
+#include $(commands_recovery_local_path)/libbluetooth/Android.mk
+#include $(commands_recovery_local_path)/bluedroidtest/Android.mk

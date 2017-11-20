@@ -1,18 +1,19 @@
 #!/sbin/busybox sh
 
-module_path_8188eu=/res/8188eu.ko
-module_path_8192cu=/res/8192cu.ko
-module_path_rk903=/res/rkwifi.ko
-module_path_rt5370=/res/rt5370sta.ko
-module_path_mt7601=/res/mt7601sta.ko
-module_path_mtPrealloc7601=/res/mtprealloc7601Usta.ko
-module_path_8723au=/res/8723au.ko
-module_path_8723as=/res/8723as.ko
-module_path_wlan=/res/wlan.ko
-module_path_esp8089=/system/lib/modules/esp8089.ko
+module_path_bcmdhd=/vendor/lib/modules/wifi/bcmdhd.ko
+module_path_8188eu=/vendor/lib/modules/wifi/8188eu.ko
+module_path_8723bu=/vendor/lib/modules/wifi/8723bu.ko
+module_path_8723bs=/vendor/lib/modules/wifi/8723bs.ko
+module_path_8723cs=/vendor/lib/modules/wifi/8723cs.ko
+module_path_8723ds=/vendor/lib/modules/wifi/8723ds.ko
+module_path_8188fu=/vendor/lib/modules/wifi/8188fu.ko
+module_path_8822bs=/vendor/lib/modules/wifi/8822bs.ko
+module_path_8189es=/vendor/lib/modules/wifi/8189es.ko
+module_path_8189fs=/vendor/lib/modules/wifi/8189fs.ko
+
 result_file=/data/scan_result.txt
 result_file2=/data/scan_result2.txt
-chip_type_path=/sys/class/rkwifi/chip
+chip_type_path=/data/misc/wifi/wifi_chip
 driver_node=/sys/class/rkwifi/driver
 pcba_node=/sys/class/rkwifi/pcba
 version_path=/proc/version
@@ -26,27 +27,10 @@ android_kitkat=false
 
 jmax=3
 
-if busybox cat $chip_type_path | busybox grep RK903; then
-  module_path=$module_path_rk903
+if busybox cat $chip_type_path | busybox grep AP; then
+  module_path=$module_path_bcmdhd
   chip_broadcom=true
   echo 1 > $pcba_node
-fi
-
-if busybox cat $chip_type_path | busybox grep RK901; then
-  module_path=$module_path_rk903
-  chip_broadcom=true
-  echo 1 > $pcba_node
-fi
-
-if busybox cat $chip_type_path | busybox grep BCM4330; then
-  module_path=$module_path_rk903
-  chip_broadcom=true
-  echo 1 > $pcba_node
-fi
-
-if busybox cat $chip_type_path | busybox grep RTL8188CU; then
-  jmax=6
-  module_path=$module_path_8192cu
 fi
 
 if busybox cat $chip_type_path | busybox grep RTL8188EU; then
@@ -54,30 +38,37 @@ if busybox cat $chip_type_path | busybox grep RTL8188EU; then
   module_path=$module_path_8188eu
 fi
 
-if busybox cat $chip_type_path | busybox grep RT5370; then
-  jmax=6
-  module_path=$module_path_rt5370
-fi
-
-if busybox cat $chip_type_path | busybox grep MT7601; then
-  jmax=6
-  module_path=$module_path_mt7601
-  echo "mt7601 insmod pre-alloc driver & copy firmware"
-  insmod "$module_path_mtPrealloc7601"
-  busybox cp /system/etc/firmware/RT2870STA.dat /etc/firmware/
-  #interface_up=false
-fi
-
 if busybox cat $chip_type_path | busybox grep RTL8723AU; then
-  module_path=$module_path_8723au
+  module_path=$module_path_8723bu
 fi
 
-if busybox cat $chip_type_path | busybox grep RTL8723AS; then
-  module_path=$module_path_8723as
-fi  
+if busybox cat $chip_type_path | busybox grep RTL8723BS; then
+  module_path=$module_path_8723bs
+fi
 
-if busybox cat $chip_type_path | busybox grep ESP8089; then
-  module_path=$module_path_esp8089
+if busybox cat $chip_type_path | busybox grep RTL8723CS; then
+  module_path=$module_path_8723cs
+fi
+
+if busybox cat $chip_type_path | busybox grep RTL8723DS; then
+  module_path=$module_path_8723ds
+fi
+
+if busybox cat $chip_type_path | busybox grep RTL8188FU; then
+  jmax=6
+  module_path=$module_path_8188fu
+fi
+
+if busybox cat $chip_type_path | busybox grep RTL8822BS; then
+  module_path=$module_path_8822bs
+fi
+
+if busybox cat $chip_type_path | busybox grep RTL8189ES; then
+  module_path=$module_path_8189es
+fi
+
+if busybox cat $chip_type_path | busybox grep RTL8189FS; then
+  module_path=$module_path_8189fs
 fi
 
 if busybox cat $version_path | busybox grep 3.0.36+; then
@@ -97,10 +88,10 @@ if busybox ifconfig wlan0; then
   android_kitkat=true
 fi
 
-if busybox ls $driver_node; then
-  echo "wifi driver is buildin"
-  driver_buildin=true
-fi
+#if busybox ls $driver_node; then
+#  echo "wifi driver is buildin"
+#  driver_buildin=true
+#fi
 
 echo "touch $result_file"
 busybox touch $result_file

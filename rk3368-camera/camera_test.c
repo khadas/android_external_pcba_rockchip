@@ -952,7 +952,7 @@ int startCameraTest(){
 			printf("%s %d  ISP input data is successed!\n",__FUNCTION__,__LINE__); 	
 			break;
 		} else {
-			printf("%s %d  ISP input data is successed!\n",__FUNCTION__,__LINE__); 	
+			printf("%s %d  ISP input data is failed!\n",__FUNCTION__,__LINE__); 	
 		}
 		usleep(10000);//1fps(200*10ms/2)<framrate<100fps(10ms)
 	}
@@ -1176,7 +1176,7 @@ Next:
 				printf("%s %d  ISP input data is successed!\n",__FUNCTION__,__LINE__); 	
 				break;
 			} else {
-				printf("%s %d  ISP input data is successed!\n",__FUNCTION__,__LINE__); 	
+				printf("%s %d  ISP input data is failed!\n",__FUNCTION__,__LINE__); 	
 			}
 			usleep(10000);//1fps(200*10ms/2)<framrate<100fps(10ms)
 		}

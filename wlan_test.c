@@ -42,6 +42,10 @@
 static char ssids[MAX_SCAN_COUNTS][128];
 static char rssis[MAX_SCAN_COUNTS][128];
 
+static char wifi_type[64] = {0};
+extern int check_wifi_chip_type_string(char *type);
+static const char RECOGNIZE_WIFI_CHIP[] = "/data/misc/wifi/wifi_chip";
+
 /*
  * RSSI Levels as used by notification icon
  *
@@ -129,6 +133,45 @@ static void process_ssid(char *dst, char *src, char *src2)
 	sprintf(dst, "{ %s \"%d\" }", &ssids[index][0], rssi);
 }
 
+int save_wifi_chip_type(char *type)
+{
+	int ret;
+	int fd;
+	int len;
+	char buf[64];
+	ret = access(RECOGNIZE_WIFI_CHIP, R_OK|W_OK);
+	if ((ret == 0) || (errno == EACCES)) {
+		if ((ret != 0) && (chmod(RECOGNIZE_WIFI_CHIP, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) != 0)) {
+			LOG("Cannot set RW to %s : %s\n", RECOGNIZE_WIFI_CHIP,strerror(errno));
+			return -1;
+		}
+		LOG("%s is exit\n", RECOGNIZE_WIFI_CHIP);
+		return 0;
+	}
+
+	fd = TEMP_FAILURE_RETRY(open(RECOGNIZE_WIFI_CHIP, O_CREAT|O_RDWR, 0664));
+	if (fd < 0) {
+		LOG("Cannot create %s : %s\n", RECOGNIZE_WIFI_CHIP,strerror(errno));
+		return -1;
+	}
+	LOG("is not exit,save wifi chip %s\n", RECOGNIZE_WIFI_CHIP);
+	strcpy(buf, type);
+	LOG("recognized wifi chip = %s , save to %s\n",buf, RECOGNIZE_WIFI_CHIP);
+	len = strlen(buf)+1;
+	if (TEMP_FAILURE_RETRY(write(fd, buf, len)) != len) {
+		LOG("Error writing %s : %s\n", RECOGNIZE_WIFI_CHIP, strerror(errno));
+		close(fd);
+		return -1;
+	}
+	close(fd);
+	if (chmod(RECOGNIZE_WIFI_CHIP, 0664) < 0) {
+		LOG("Error changing permissions of %s to 0664: %s\n", RECOGNIZE_WIFI_CHIP, strerror(errno));
+		unlink(RECOGNIZE_WIFI_CHIP);
+		return -1;
+	}
+	return 1;
+}
+
 void *wlan_test(void *argv)
 {
 	int ret = 0, y;
@@ -148,6 +191,10 @@ void *wlan_test(void *argv)
 	ui_print_xy_rgba(0, y, 255, 255, 0, 255, "%s:[%s..]\n", PCBA_WIFI,
 			 PCBA_TESTING);
 
+	if (wifi_type[0] == 0) {
+		check_wifi_chip_type_string(wifi_type);
+		save_wifi_chip_type(wifi_type);
+	}
 	ret = __system("busybox chmod 777 /res/wifi.sh");
 	if (ret)
 		LOG("chmod wifi.sh failed :%d\n", ret);
