@@ -6,6 +6,12 @@ TARGET_BOARD_PLATFORM=$3
 TARGET_ARCH=$4
 PCBA_PATH=external/rk-pcba-test
 
+if [ $TARGET_ARCH = "arm64" ] ; then
+PLATFORM_LIB_PATH=$PRODUCT_OUT/obj_arm/lib
+else
+PLATFORM_LIB_PATH=$PRODUCT_OUT/obj/lib
+fi
+
 ############################################### wifi bt firmware ##################################################
 
 mkdir -p $PRODUCT_OUT/recovery/root/system/
@@ -47,98 +53,50 @@ if [ -e "$PRODUCT_OUT/recovery/root/sbin/sh" ] ; then
 cp $PRODUCT_OUT/recovery/root/sbin/sh $PRODUCT_OUT/recovery/root/system/bin/
 fi
 
-if [ $TARGET_ARCH = "arm64" ] ; then
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libselinux.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libselinux.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libusbhost.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libusbhost.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libc.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libc.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libz.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libz.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libcutils.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libcutils.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libutils.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libutils.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/liblog.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/liblog.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libm.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libm.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libstdc++.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libstdc++.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libc++.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libc++.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libdl.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libdl.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libbacktrace.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libbacktrace.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libbase.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libbase.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/libunwind.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/libunwind.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj_arm/lib/liblzma.so" ] ; then
-    cp $PRODUCT_OUT/obj_arm/lib/liblzma.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-else
-    if [ -e "$PRODUCT_OUT/obj/lib/libselinux.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libselinux.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libusbhost.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libusbhost.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libc.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libc.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libz.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libz.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libcutils.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libcutils.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libutils.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libutils.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/liblog.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/liblog.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libm.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libm.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libstdc++.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libstdc++.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libc++.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libc++.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libdl.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libdl.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libbacktrace.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libbacktrace.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libbase.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libbase.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/libunwind.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/libunwind.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
-    if [ -e "$PRODUCT_OUT/obj/lib/liblzma.so" ] ; then
-    cp $PRODUCT_OUT/obj/lib/liblzma.so $PRODUCT_OUT/recovery/root/system/lib/
-    fi
+if [ -e "$PLATFORM_LIB_PATH/libselinux.so" ] ; then
+cp $PLATFORM_LIB_PATH/libselinux.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libusbhost.so" ] ; then
+cp $PLATFORM_LIB_PATH/libusbhost.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libc.so" ] ; then
+cp $PLATFORM_LIB_PATH/libc.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libz.so" ] ; then
+cp $PLATFORM_LIB_PATH/libz.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libcutils.so" ] ; then
+cp $PLATFORM_LIB_PATH/libcutils.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libutils.so" ] ; then
+cp $PLATFORM_LIB_PATH/libutils.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/liblog.so" ] ; then
+cp $PLATFORM_LIB_PATH/liblog.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libm.so" ] ; then
+cp $PLATFORM_LIB_PATH/libm.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libstdc++.so" ] ; then
+cp $$PLATFORM_LIB_PATH/libstdc++.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libc++.so" ] ; then
+cp $PLATFORM_LIB_PATH/libc++.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libdl.so" ] ; then
+cp $PLATFORM_LIB_PATH/libdl.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libbacktrace.so" ] ; then
+cp $PLATFORM_LIB_PATH/libbacktrace.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libbase.so" ] ; then
+cp $PLATFORM_LIB_PATH/libbase.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/libunwind.so" ] ; then
+cp $PLATFORM_LIB_PATH/libunwind.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PLATFORM_LIB_PATH/liblzma.so" ] ; then
+cp $PLATFORM_LIB_PATH/liblzma.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 
 #for camera test
