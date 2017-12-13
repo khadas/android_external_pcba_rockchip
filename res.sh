@@ -88,20 +88,24 @@ cp $PLATFORM_LIB_PATH/libdl.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 if [ -e "$PLATFORM_LIB_PATH/libbacktrace.so" ] ; then
 cp $PLATFORM_LIB_PATH/libbacktrace.so $PRODUCT_OUT/recovery/root/system/lib/
+else
+cp $PRODUCT_OUT/system/lib/libbacktrace.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 if [ -e "$PLATFORM_LIB_PATH/libbase.so" ] ; then
 cp $PLATFORM_LIB_PATH/libbase.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 if [ -e "$PLATFORM_LIB_PATH/libunwind.so" ] ; then
 cp $PLATFORM_LIB_PATH/libunwind.so $PRODUCT_OUT/recovery/root/system/lib/
+else
+cp $PRODUCT_OUT/system/lib/libunwind.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 if [ -e "$PLATFORM_LIB_PATH/liblzma.so" ] ; then
 cp $PLATFORM_LIB_PATH/liblzma.so $PRODUCT_OUT/recovery/root/system/lib/
+else
+cp $PRODUCT_OUT/system/lib/liblzma.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
-
-#for camera test
-if [ -e "$PRODUCT_OUT/vendor/lib/libion.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/libion.so $PRODUCT_OUT/recovery/root/system/lib/
+if [ -e "$PLATFORM_LIB_PATH/libion.so" ] ; then
+cp $PLATFORM_LIB_PATH/libion.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
 
 if [ -e "$PRODUCT_OUT/system/lib/libvndksupport.so" ] ; then

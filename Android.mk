@@ -102,7 +102,7 @@ LOCAL_SRC_FILES += \
     rk32_codec/codec_test.c
     #rk3288-camera/camera_test.c
 else
-ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk312x)
+ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3126c)
 LOCAL_CFLAGS += -DRK312X_PCBA
 LOCAL_SRC_FILES += \
     alsa_mixer.c \
