@@ -240,7 +240,7 @@ int marvin_check_vsync(MrvAllRegister_t *pMrvReg)
 		//printf("check vsync is low! isp_flags_shd:%0x%08x \n",isp_flags_shd); 		
 	}
 
-    printf("isp_flags_shd: 0x%08x result:%d\n",isp_flags_shd,result); 
+    printf("isp_flags_shd: 0x%08lx result:%d\n",isp_flags_shd,result); 
     return result;
 }
 
@@ -603,7 +603,7 @@ typedef struct ionbuf {
     int buf_fd;
     unsigned int len;
     ion_user_handle_t handle;
-    unsigned int phy;
+    unsigned long phy;
     unsigned int *vir;
 } ionbuf_t;
 
@@ -627,7 +627,7 @@ int allocbuf_ion(ionbuf_t *ionbuf)
                 if (err<0) {
                     printf("ion get phys failed\n");
                 } else{
-                    printf("ion get phys: 0x%x\n", ionbuf->phy);
+                    printf("ion get phys: 0x%lx\n", ionbuf->phy);
                 }
 
                 ionbuf->vir = (unsigned int*)mmap(0,ION_LEN,
@@ -945,19 +945,19 @@ int startCameraTest(){
 		printf("%s sensor streamon not ok\n", BACK_SENSOR_NAME);
 	printf("%s %d  hcc\n",__FUNCTION__,__LINE__);  
 
-	usleep(1000000);
+	//usleep(1000000);
 
-	for(i=0;i<200;i++){
+	for(i=0;i<2000;i++){
 		if(marvin_check_vsync((MrvAllRegister_t *) pMrvReg)){
 			printf("%s %d  ISP input data is successed!\n",__FUNCTION__,__LINE__); 	
 			break;
 		} else {
-			printf("%s %d  ISP input data is failed!\n",__FUNCTION__,__LINE__); 	
+			printf("%s %d  ISP input data is failed times:%d\n",__FUNCTION__,__LINE__,i); 	
 		}
 		usleep(10000);//1fps(200*10ms/2)<framrate<100fps(10ms)
 	}
 
-	if (i == 200) {
+	if (i == 2000) {
 		err = -1;
 		goto Next;
 	}
