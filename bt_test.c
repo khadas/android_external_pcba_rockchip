@@ -825,11 +825,15 @@ struct termios termios;
 unsigned char  buffer[1024];
 int ttytestResult= -1;
 unsigned char hci_reset[] = { 0x01, 0x03, 0x0c, 0x00 };
+unsigned char hci_rtksyc[] = { 0xc0, 0x00, 0x2f, 0x00,0xd0, 0x01,0x7e,0xc0};
+
+
 void
-init_uart()
+init_uart_brcm()
 {
 	tcflush(uart_fd, TCIOFLUSH);
 	int n = tcgetattr(uart_fd, &termios);
+	printf("tcgetattr %d\n",n);
 
 #ifndef __CYGWIN__
 	cfmakeraw(&termios);
@@ -853,68 +857,141 @@ init_uart()
 	tcsetattr(uart_fd, TCSANOW, &termios);
 }
 
+
 void
-dump(unsigned char  *out, int len)
+init_uart_rtk()
+{
+	tcflush(uart_fd, TCIOFLUSH);
+	int n = tcgetattr(uart_fd, &termios);
+	printf("tcgetattr %d\n",n);
+
+#ifndef __CYGWIN__
+	cfmakeraw(&termios);
+#else
+	termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
+                | INLCR | IGNCR | ICRNL | IXON);
+	termios.c_oflag &= ~OPOST;
+	termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	termios.c_cflag &= ~(CSIZE | PARENB);
+	termios.c_cflag |= CS8;
+#endif
+		termios.c_cflag &= ~CRTSCTS;
+
+	termios.c_cflag |= PARENB;
+
+	//termios.c_cflag |= CRTSCTS;
+	tcsetattr(uart_fd, TCSANOW, &termios);
+	tcflush(uart_fd, TCIOFLUSH);
+	tcsetattr(uart_fd, TCSANOW, &termios);
+	tcflush(uart_fd, TCIOFLUSH);
+	tcflush(uart_fd, TCIOFLUSH);
+	cfsetospeed(&termios, B115200);
+	cfsetispeed(&termios, B115200);
+	tcsetattr(uart_fd, TCSANOW, &termios);
+}
+
+void
+dump(unsigned char *out, int len)
 {
 	int i;
 
 	for (i = 0; i < len; i++) {
 		if (i && !(i % 16)) {
-			fprintf(stderr, "\n");
+			printf("\n");
 		}
 
 		printf("%02x ", out[i]);
 	}
 
-	printf( "\n");
+	printf("\n");
 }
 
-void
-read_event(int fd, unsigned char  *buffer)
+
+#define READTTY_TIMEOUT  30//3s
+int readttyLen(int fd,unsigned char *buffer,int len)
 {
-	int i = 0;
-	int len = 3;
 	int count;
-	printf("read_event \n");
-
-	while ((count = read(fd, &buffer[i], len)) < len) {
-		printf("count %d \n",count);
-		i += count;
-		len -= count;
+	int i= 0;
+	int timeout=0;
+	while(len){
+		count = read(fd,&buffer[i],1);
+		if(count == 1){
+			i += count;
+			len -= count;
+		}
+		else{
+			usleep(100000);//100ms
+			timeout ++;
+			//printf("timeout %d\n", timeout);
+			if(timeout >= READTTY_TIMEOUT)
+				return -1;
+		}
 	}
-
+	return i;
+}
+void readBrcmTty(int fd, unsigned char  *buffer)
+{
+	int i=0;
+	int count;
+	int len;
+	count = readttyLen(fd,buffer,3);
+	printf("readBrcmTty count11 %d\n", count);
+	if(count < 3)
+		return;
 	i += count;
 	len = buffer[2];
-
-	while ((count = read(fd, &buffer[i], len)) < len) {
-		i += count;
-		len -= count;
-	}
+	
+	count = readttyLen(fd,&buffer[i],len);
+	if(count<len)
+		return;
+	i += count;
 
 	//if (debug)
-		{
-		count += i;
+	{
 
-		printf("received %d\n", count);
-		dump(buffer, count);
+		printf("readBrcmTty received %d\n", i);
+		dump(buffer, i);
 	}
+	
 	ttytestResult = 0;
 	printf("bt ttytest read_event succ\n");
 }
 
-void
-hci_send_buf(unsigned char  *buf, int len)
+void readRtkTty(int fd, unsigned char  *buffer)
 {
+	int i=0;
+	int count;
+	int len;
+	
+	count = readttyLen(fd,buffer,16);
+	if(count < 16)
+		return;
+	i += count;
 
-    printf("writing\n");
-	dump(buf, len);
+	//if (debug)
+	{
 
+		printf("received %d\n", i);
+		dump(buffer, i);
+	}
+
+	ttytestResult = 0;
+	printf("bt ttytest read_event succ\n");
+}
+
+
+void
+hci_send_cmd(unsigned char *buf, int len)
+{
+	//if (debug) 
+	{
+		printf("writing\n");
+		dump(buf, len);
+	}
 
 	int writelen=write(uart_fd, buf, len);
 	printf("writelen %d\n",writelen);
 }
-void
-init_uart();
 
 
 void
@@ -993,6 +1070,20 @@ void get_tty_conf(const char *p_path,char *ttyPort)
 	strcpy(ttyPort,"/dev/ttyS0");
 }
 
+int test_rtktty()
+{
+	init_uart_rtk();
+	hci_send_cmd(hci_rtksyc, sizeof(hci_rtksyc));
+	readRtkTty(uart_fd, buffer);
+	return ttytestResult;
+}
+int test_brcmtty()
+{
+	init_uart_brcm();
+	hci_send_cmd(hci_reset, sizeof(hci_reset));
+	readBrcmTty(uart_fd, buffer);
+	return ttytestResult;
+}
 
 static void ttytestThread(void *param)
 {
@@ -1000,12 +1091,18 @@ static void ttytestThread(void *param)
 	__system("echo 1 > /sys/class/rfkill/rfkill0/state");
 	sleep(1);
     get_tty_conf("/vendor/etc/bluetooth/bt_vendor.conf",ttyPort);
-	if ((uart_fd = open(ttyPort, O_RDWR | O_NOCTTY)) == -1) {
+	if ((uart_fd = open(ttyPort, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1) {
 		printf( "port could not be opened, error %d\n", errno);
 	}
 
-	init_uart();
-	proc_reset();
+	int i;
+	for(i=0;i<3;i++){
+	 if(test_brcmtty()>=0)
+	 	return;
+	 if(test_rtktty()>=0)
+	 	return;
+	}
+
 }
 
 int bluetoothtty_test()
