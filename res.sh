@@ -24,6 +24,7 @@ mkdir -p $PRODUCT_OUT/recovery/root/system/etc/firmware/
 mkdir -p $PRODUCT_OUT/recovery/root/etc/firmware/
 mkdir -p $PRODUCT_OUT/recovery/root/etc/bluetooth/
 mkdir -p $PRODUCT_OUT/recovery/root/vendor/firmware
+mkdir -p $PRODUCT_OUT/recovery/root/vendor/etc/bluetooth/
 mkdir -p $PRODUCT_OUT/recovery/root/lib/firmware
 mkdir -p $PRODUCT_OUT/recovery/root/system/etc/bluetooth
 mkdir -p $PRODUCT_OUT/recovery/root/vendor/lib/modules/wifi
@@ -35,6 +36,10 @@ cp -rf $PRODUCT_OUT/vendor/etc/firmware/ $PRODUCT_OUT/recovery/root/vendor/etc/ 
 fi
 if [ -e "$PRODUCT_OUT/vendor/lib/modules/" ] ; then
 cp -rf $PRODUCT_OUT/vendor/lib/modules/wifi/ $PRODUCT_OUT/recovery/root/vendor/lib/modules/ -a
+fi
+
+if [ -e "$PRODUCT_OUT/vendor/etc/bluetooth/bt_vendor.conf" ] ; then
+cp $PRODUCT_OUT/vendor/etc/bluetooth/bt_vendor.conf $PRODUCT_OUT/recovery/root/vendor/etc/bluetooth/
 fi
 
 ############################################### bin/lib ##################################################
