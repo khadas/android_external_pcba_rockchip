@@ -108,7 +108,7 @@ LOCAL_SRC_FILES += \
     alsa_mixer.c \
     alsa_pcm.c \
     codec_test.c \
-    rk312x-camera/camera_test.c
+    #rk312x-camera/camera_test.c
 else
 ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3368)
 LOCAL_CFLAGS += -DRK3368_PCBA
