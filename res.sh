@@ -121,3 +121,22 @@ fi
 if [ -e "$PRODUCT_OUT/vendor/lib/librkwifi-ctrl.so" ] ; then
 cp $PRODUCT_OUT/vendor/lib/librkwifi-ctrl.so $PRODUCT_OUT/recovery/root/system/lib/
 fi
+
+if [ -e "$PRODUCT_OUT/vendor/lib/libdrm.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libdrm.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PRODUCT_OUT/vendor/lib/libdrm_rockchip.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libdrm_rockchip.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PRODUCT_OUT/system/lib/libGLESv1_CM.so" ] ; then
+cp $PRODUCT_OUT/system/lib/libGLESv1_CM.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PRODUCT_OUT/vendor/lib/libgralloc_drm.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/libgralloc_drm.so $PRODUCT_OUT/recovery/root/system/lib/
+fi
+if [ -e "$PRODUCT_OUT/vendor/lib/hw/gralloc.rk30board.so" ] ; then
+cp $PRODUCT_OUT/vendor/lib/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/system/lib/hw/
+fi
+if [ -e "$PRODUCT_OUT/system/lib/libhardware.so" ] ; then
+cp $PRODUCT_OUT/system/lib/libhardware.so $PRODUCT_OUT/recovery/root/system/lib/
+fi

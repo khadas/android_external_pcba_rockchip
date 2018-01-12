@@ -24,10 +24,17 @@
 #include <time.h>
 #include <sys/time.h>
 #include <signal.h>
+
+#if defined(RK_DRM_GRALLOC)
+#include <hardware/hardware.h>
+#include <hardware/gralloc.h>
+#include "../Language/language.h"
+#else
 //#include <linux/ion.h>
 //#include <ion/ion.h>
 //#include <ion/rockchip_ion.h>
 #include "../../../system/core/libion/kernel-headers/linux/rockchip_ion.h"
+#endif
 
 #include <linux/videodev2.h>
 //#include <linux/delay.h>

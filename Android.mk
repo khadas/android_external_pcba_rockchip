@@ -48,6 +48,12 @@ ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3399)
 LOCAL_CFLAGS += -DRK3399_PCBA
 endif
 
+ifeq ($(strip $(BOARD_USE_DRM)), true)
+ifneq ($(filter rk3368 rk3399 rk3288 rk3366 rk3126c, $(strip $(TARGET_BOARD_PLATFORM))), )
+LOCAL_CFLAGS +=-DRK_DRM_GRALLOC=1
+endif
+endif
+
 #=========  rotate screen  0, 90, 180, 270  degree===========
 # warning:  If changed please force rebuid the target -B
 ROTATE_SCREEN := 0
@@ -108,7 +114,7 @@ LOCAL_SRC_FILES += \
     alsa_mixer.c \
     alsa_pcm.c \
     codec_test.c \
-    #rk312x-camera/camera_test.c
+    rk312x-camera/camera_test.c
 else
 ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3368)
 LOCAL_CFLAGS += -DRK3368_PCBA
@@ -236,7 +242,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion librkwifi-ctrl
+LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion librkwifi-ctrl libdl libhardware libgralloc_drm libdrm libdrm_rockchip
 LOCAL_STATIC_LIBRARIES += libm
 LOCAL_STATIC_LIBRARIES += libmincrypt
 LOCAL_STATIC_LIBRARIES += libminuitwrp libpixelflinger_twrp libpng libjpegtwrp

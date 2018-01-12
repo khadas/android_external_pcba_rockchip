@@ -1,6 +1,6 @@
 #include <hardware/rga.h>
 #include "camera_test.h"
-#include "../minuitwrp/minui.h"
+#include "../minui_pcba/minui.h"
 #include "../test_case.h"
 #define VIDEO_DEV_NAME   "/dev/video0"
 #define PMEM_DEV_NAME    "/dev/pmem_cam"
@@ -34,6 +34,29 @@ enum {
 	FD_INIT = -1,
 };
 
+#if defined(RK_DRM_GRALLOC)
+struct drm_rockchip_gem_phys {
+	uint32_t handle;
+	uint32_t phy_addr;
+};
+#define DRM_ROCKCHIP_GEM_GET_PHYS	0x04
+#define DRM_IOCTL_ROCKCHIP_GEM_GET_PHYS		DRM_IOWR(DRM_COMMAND_BASE + \
+		DRM_ROCKCHIP_GEM_GET_PHYS, struct drm_rockchip_gem_phys)
+
+typedef struct drmbuf {
+	int fd;
+	const gralloc_module_t *module;
+	struct alloc_device_t *mGrallocAllocDev;
+	struct gralloc_drm_handle_t *buffHandle;
+	unsigned int flag;
+
+	unsigned long vir_addr;
+	unsigned long phy_addr;
+	size_t size;
+} drmbuf_t;
+
+static drmbuf_t drmbuf[4]; 
+#else
 static int iIonFd = -1;
 struct ion_allocation_data ionAllocData;
 struct ion_fd_data fd_data;
@@ -49,6 +72,7 @@ struct ion_custom_data data;
 
 struct ion_phys_data  phys_data_display;
 struct ion_custom_data data_display;
+#endif
 
 #define RK30_PLAT 1
 #define RK29_PLAT 0
@@ -86,6 +110,513 @@ static int arm_camera_yuv420_scale_arm(int v4l2_fmt_src, int v4l2_fmt_dst,
 
 static int rga_nv12_scale_crop(int src_width, int src_height, char *src, short int *dst, int dstbuf_width,int dst_width,int dst_height,int zoom_val,int mirror,int isNeedCrop,int isDstNV21);
  
+
+#if defined(RK_DRM_GRALLOC)
+int allocbuf_drm(drmbuf_t *drmbuf)
+{
+	int err;
+	hw_device_t *device;
+	unsigned int pix_format;
+	int stride;
+	void *vir_addr;
+	uint32_t phy_addr;
+
+	err = hw_get_module(GRALLOC_HARDWARE_MODULE_ID, (const hw_module_t **)&drmbuf->module);
+	printf("%s(%d): test module:%p\n", __func__, __LINE__, drmbuf->module);
+	if (!err) {
+		err = gralloc_open((const struct hw_module_t*)drmbuf->module, &drmbuf->mGrallocAllocDev);
+		printf("%s(%d): test mGrallocAllocDev:%p\n", __func__, __LINE__,&drmbuf->mGrallocAllocDev);
+		if (err) {
+			printf("Unable to open gralloc alloc device(error %d)\n", err);
+		}
+	} else {
+           printf("Unable get module(error %d)\n", err);
+           return 0;
+        }
+
+	drmbuf->flag = 0;
+	drmbuf->flag |= GRALLOC_USAGE_HW_CAMERA_WRITE |
+			GRALLOC_USAGE_HW_CAMERA_READ |
+			GRALLOC_USAGE_SW_WRITE_OFTEN |
+			GRALLOC_USAGE_SW_READ_OFTEN;
+//			GRALLOC_USAGE_TO_USE_PHY_CONT;
+	pix_format = HAL_PIXEL_FORMAT_YCrCb_NV12;
+	printf("%s(%d): test\n", __func__, __LINE__);
+
+	err = drmbuf->mGrallocAllocDev->alloc(drmbuf->mGrallocAllocDev,
+		camera_w,
+		camera_h,
+		pix_format,
+		drmbuf->flag,
+		(buffer_handle_t *)&drmbuf->buffHandle,
+		&stride);
+	printf("%s(%d): test\n", __func__, __LINE__);
+	if (err) {
+		printf("%s(%d): grlalloc buffer allocation failed (error: %d)\n",
+			__func__, __LINE__, err);
+	}
+
+	err = drmbuf->module->lock(drmbuf->module,
+		(buffer_handle_t)drmbuf->buffHandle,
+		drmbuf->flag, 0, 0,
+		camera_w,
+		camera_h,
+		&vir_addr);
+	printf("%s(%d): test\n", __func__, __LINE__);
+	drmbuf->vir_addr = (unsigned long)vir_addr;
+
+	err = drmbuf->module->perform(drmbuf->module,
+		GRALLOC_MODULE_PERFORM_GET_HADNLE_PHY_ADDR,
+		(buffer_handle_t)drmbuf->buffHandle,
+		&phy_addr);
+	printf("%s(%d): test\n", __func__, __LINE__);
+	drmbuf->phy_addr = phy_addr;
+
+	err = drmbuf->module->perform(drmbuf->module,
+		GRALLOC_MODULE_PERFORM_GET_HADNLE_SIZE,
+		(buffer_handle_t)drmbuf->buffHandle,
+		&drmbuf->size);
+        printf("%s(%d): test\n", __func__, __LINE__);
+	
+	err = drmbuf->module->perform(drmbuf->module,
+		GRALLOC_MODULE_PERFORM_GET_HADNLE_PRIME_FD,
+		(buffer_handle_t)drmbuf->buffHandle,
+		&drmbuf->fd);
+
+	printf("vir_addr 0x%lx, phy_addr 0x%lx, size %zu, fd %d\n", drmbuf->vir_addr, drmbuf->phy_addr, drmbuf->size, drmbuf->fd);
+	return 0;
+}
+
+int freebuf_drm(drmbuf_t *drmbuf)
+{
+	int ret = 0;
+
+	if (drmbuf->mGrallocAllocDev) {
+		ret = gralloc_close(drmbuf->mGrallocAllocDev);
+		if (ret) {
+			printf("gralloc close failed (error %d)\n", ret);
+		}
+		drmbuf->mGrallocAllocDev = NULL;
+	}
+
+	drmbuf->module = NULL;
+	return 0;
+}
+
+int get_camera_size()
+{
+	camera_w = 640;
+	camera_h = 480;			
+	
+	camera_x = 0; 	
+	camera_y = 0;
+
+	printf("camera_w = %d,camera_h = %d\ncamera_x = %d,camera_y = %d\n"
+		,camera_w,camera_h,camera_x,camera_y);
+	return 0;
+}
+
+int selectPreferedDrvSize(int *width,int * height,int driver_support_fmt_num)
+{
+    int num = driver_support_fmt_num;
+    int ori_w = *width,ori_h = *height,pref_w=0,pref_h=0;
+    int demand_ratio = (*width * 100) / (*height);
+    int32_t total_pix = (*width) * (*height);
+
+    int cur_ratio ,cur_ratio_diff,pref_ratio_diff = 10000;
+    int32_t cur_pix ,cur_pix_diff,pref_pix_diff = 8*1000*1000;
+	int i = 0;
+    //serch for the preferred res
+    for(i =0;i<num;i++){
+        cur_ratio = driver_support_size[i][0] * 100 / driver_support_size[i][1];
+        cur_pix   = driver_support_size[i][0] * driver_support_size[i][1];
+        cur_pix_diff = ((total_pix - cur_pix)>0)?(total_pix - cur_pix):(cur_pix - total_pix);
+        cur_ratio_diff = ((demand_ratio - cur_ratio)>0)?(demand_ratio - cur_ratio):(cur_ratio - demand_ratio);
+        //
+        if((cur_pix_diff < pref_pix_diff) && (cur_ratio_diff <=  pref_ratio_diff)){
+            pref_pix_diff = cur_pix_diff;
+            cur_ratio_diff = pref_ratio_diff;
+            pref_w = driver_support_size[i][0];
+            pref_h = driver_support_size[i][1];
+        }
+    }
+    if(pref_w != 0){
+        *width = pref_w;
+        *height = pref_h;
+        printf("%s:prefer res (%dx%d)\n",__FUNCTION__,pref_w,pref_h);
+    }else{
+        printf("WARINING:have not select preferred res!!");
+    }
+    return 0;
+}
+
+int CameraCreate(void)
+{
+	int err = 0,size,i;
+	struct v4l2_format format;
+
+    if (iCamFd == 0) {
+        iCamFd = open(videodevice, O_RDWR|O_CLOEXEC);
+       
+        if (iCamFd < 0) {
+            printf(" Could not open the camera  device:%s\n",videodevice);
+    		err = -1;
+            goto exit;
+        }
+		printf("open the camera	device:%s success\n",videodevice);
+
+        memset(&mCamDriverCapability, 0, sizeof(struct v4l2_capability));
+        err = ioctl(iCamFd, VIDIOC_QUERYCAP, &mCamDriverCapability);
+        if (err < 0) {
+        	printf("Error opening device unable to query device.\n");
+    	    goto exit;
+        } 
+		
+		if(strstr((char*)&mCamDriverCapability.card[0], "front") != NULL){
+			printf("it is a front camera \n!");
+		} else if(strstr((char*)&mCamDriverCapability.card[0], "back") != NULL){
+			printf("it is a back camera \n!"); 
+		} else{
+			printf("it is a usb camera \n!");
+		}
+		
+        if (mCamDriverCapability.version == RK29_CAM_VERSION_CODE_1) {
+            pix_format = V4L2_PIX_FMT_YUV420;
+            printf("Current camera driver version: 0.0.1 \n");    
+        } else 
+        { 
+            pix_format = V4L2_PIX_FMT_NV12;
+            printf("Current camera driver version: %d.%d.%d \n",                
+                (mCamDriverCapability.version>>16) & 0xff,(mCamDriverCapability.version>>8) & 0xff,
+                mCamDriverCapability.version & 0xff); 
+        }
+        
+    }
+    if(access("/sys/module/rk29_camera_oneframe", O_RDWR) >=0 ){
+        is_rk30_plat =  RK29_PLAT;
+        printf("it is rk29 platform!\n");
+    }else if(access("/sys/module/rk30_camera_oneframe", O_RDWR) >=0){
+        printf("it is rk30 platform!\n");
+    }else{
+        printf("default as rk30 platform\n");
+    }
+	
+ 	if(v4l2Buffer_phy_addr[0] !=0 || v4l2Buffer_phy_addr[1] !=0 || v4l2Buffer_phy_addr[2] !=0 || v4l2Buffer_phy_addr[3] !=0 )
+		goto exit;
+    for(i = 0;i < 4;i++)
+	{
+		allocbuf_drm(&drmbuf[i]);
+		v4l2Buffer_phy_addr[i] = drmbuf[i].fd;
+	}
+	
+	/*drmbuf_t drmbuf; 
+    allocbuf_drm(&drmbuf);
+	printf("allocbuf drm\n");
+	freebuf_drm(&drmbuf);*/
+exit:
+    	return err;
+}
+
+int CameraStart(int phy_addr[4], int buffer_count, int w, int h)
+{
+    int err,i = 0;
+    int nSizeBytes;
+    struct v4l2_format format;
+    enum v4l2_buf_type type;
+    struct v4l2_requestbuffers creqbuf;
+	struct v4l2_buffer buffer;
+	/*add yzm*/
+	struct v4l2_format fmt;
+	unsigned int mCamDriverFrmWidthMax = 0,mCamDriverFrmHeightMax = 0;
+	int driver_support_fmt_num = 0;
+	
+	struct v4l2_buffer cfilledbuffer1;
+		
+	//buffer_count = 2;
+	if( phy_addr == 0 || buffer_count == 0  ) {
+    	printf(" Video Buf is NULL\n");
+		goto  fail_bufalloc;
+    }
+
+
+	/* Try preview format */		
+	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	fmt.fmt.pix.pixelformat= pix_format;
+	fmt.fmt.pix.field = V4L2_FIELD_NONE;
+
+
+	/*picture size setting*/
+	fmt.fmt.pix.width = 10000;
+	fmt.fmt.pix.height = 10000;
+	err = ioctl(iCamFd, VIDIOC_TRY_FMT, &fmt);
+
+	mCamDriverFrmWidthMax = fmt.fmt.pix.width;
+	mCamDriverFrmHeightMax = fmt.fmt.pix.height;		
+
+	if (mCamDriverFrmWidthMax > 3264) {
+		printf("Camera driver support maximum resolution(%dx%d) is overflow 8Mega!",mCamDriverFrmWidthMax,mCamDriverFrmHeightMax);
+		mCamDriverFrmWidthMax = 3264;
+		mCamDriverFrmHeightMax = 2448;
+	}
+
+	/*preview size setting*/
+    while(mFrameSizesEnumTable[i][0]){
+        if (mCamDriverFrmWidthMax >= mFrameSizesEnumTable[i][0]) {
+            fmt.fmt.pix.width = mFrameSizesEnumTable[i][0];
+            fmt.fmt.pix.height = mFrameSizesEnumTable[i][1];
+            if (ioctl(iCamFd, VIDIOC_TRY_FMT, &fmt) == 0) {
+                if ((fmt.fmt.pix.width == mFrameSizesEnumTable[i][0]) && (fmt.fmt.pix.height == mFrameSizesEnumTable[i][1])) {
+                    driver_support_size[driver_support_fmt_num][0] = mFrameSizesEnumTable[i][0];
+                    driver_support_size[driver_support_fmt_num][1] = mFrameSizesEnumTable[i][1];
+					printf("wXy = %dX%d\n",driver_support_size[driver_support_fmt_num][0],driver_support_size[driver_support_fmt_num][1]);
+					driver_support_fmt_num++;
+                }
+            }
+        }
+        i++;
+    }
+	err = selectPreferedDrvSize(&w,&h,driver_support_fmt_num);
+	
+
+	/* Set preview format */
+	format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	format.fmt.pix.width = w;
+	format.fmt.pix.height = h;
+	format.fmt.pix.pixelformat = pix_format;
+	format.fmt.pix.field = V4L2_FIELD_NONE;	
+	err = ioctl(iCamFd, VIDIOC_S_FMT, &format);
+	if ( err < 0 ){
+		printf(" Failed to set VIDIOC_S_FMT\n");
+		goto exit1;
+	}
+
+	preview_w = format.fmt.pix.width;
+	preview_h = format.fmt.pix.height;	
+	creqbuf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    creqbuf.memory = V4L2_MEMORY_OVERLAY;
+    creqbuf.count  =  buffer_count /*- 1*/ ; //We will use the last buffer for snapshots.
+    if (ioctl(iCamFd, VIDIOC_REQBUFS, &creqbuf) < 0) {
+        printf("%s VIDIOC_REQBUFS Failed\n",__FUNCTION__);
+        goto fail_reqbufs;
+    }
+	printf("creqbuf.count = %d\n",creqbuf.count);
+    for (i = 0; i < (int)creqbuf.count; i++) {
+
+        memset(&buffer, 0, sizeof(struct v4l2_buffer)); 
+        buffer.type = creqbuf.type;
+        buffer.memory = creqbuf.memory;
+		buffer.flags = 0;
+        buffer.index = i;
+
+        if (ioctl(iCamFd, VIDIOC_QUERYBUF, &buffer) < 0) {
+            printf("%s VIDIOC_QUERYBUF Failed\n",__FUNCTION__);
+            goto fail_loop;
+        }
+
+        #if CAM_OVERLAY_BUF_NEW
+        //buffer.m.offset = phy_addr + i*buffer.length;
+		buffer.m.offset = phy_addr[i];
+        #else
+        buffer.m.offset = phy_addr;
+        #endif
+
+        /*err = ioctl(iCamFd, VIDIOC_QBUF, &buffer);
+        if (err < 0) {
+            printf("%s CameraStart VIDIOC_QBUF Failed\n",__FUNCTION__);
+            goto fail_loop;
+        }*/
+
+    }
+
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    err = ioctl(iCamFd, VIDIOC_STREAMON, &type);
+    if ( err < 0) {
+        printf("%s VIDIOC_STREAMON Failed\n",__FUNCTION__);
+        goto fail_loop;
+    }
+	
+	sleep(1);
+	
+	/*for (int i = 0; i++; i < 4) {
+	    int ret = 0;
+
+	    memset(&cfilledbuffer1, 0, sizeof(struct v4l2_buffer));
+	    cfilledbuffer1.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	    cfilledbuffer1.memory = V4L2_MEMORY_OVERLAY;
+	    cfilledbuffer1.reserved = 0;
+		
+		if (ioctl(iCamFd, VIDIOC_DQBUF, &cfilledbuffer1) < 0)
+		{
+			printf("%s VIDIOC_DQBUF Failed!!! \n",__FUNCTION__);
+			err = -1;
+			goto exit;
+		}
+		
+		FILE* fp =NULL;
+		char filename[40];
+			
+		filename[0] = 0x00;
+		//sprintf(filename, "/raw8_%dx%d_%d.raw",camera_w,camera_h,writeframe);
+		sprintf(filename, "/raw8_%dx%d_%d.raw",preview_w,preview_h,i);
+		fp = fopen(filename, "wb+");
+		if (fp > 0) {
+			fwrite((char*)drmbuf[i].vir_addr, 1,preview_w*preview_h*3/2,fp);
+			//fwrite((char*)m_v4l2buffer_display[cfilledbuffer1.index], 1,camera_w*camera_h*3/2,fp);
+			//	fwrite((char*)uv_addr_vir, 1,width*height*3/2,fp); //yuv422
+			
+			fclose(fp);
+			printf("Write success yuv data to %s\n",filename);
+		} else {
+			printf("Create %s failed(%s)",filename,strerror(errno));
+		}
+	}*/
+	
+    return 0;
+
+fail_bufalloc:
+fail_loop:
+fail_reqbufs:
+
+exit1:
+    close(iCamFd);
+	iCamFd = -1;
+exit:
+    return -1;
+}
+
+int startCamera(){
+	int ret = 0;
+	int cameraId = 0;
+	int preWidth;
+	int preHeight;
+	int corx ;
+	int cory;
+
+	get_camera_size();
+	
+	if(iCamFd > 0){
+		printf(" %s has been opened! can't switch camera!\n",videodevice);
+		return -1;
+	}
+
+	isstoped = 0;
+	hasstoped = 0;
+	cameraId = cam_id%2;
+	cam_id++;
+	preWidth = camera_w;
+	preHeight = camera_h;
+	corx = camera_x;
+	cory = camera_y;
+	sprintf(videodevice,"/dev/video%d",cameraId);
+	preview_w = preWidth;
+	preview_h = preHeight;
+	printf("start test camera %d ....\n",cameraId);
+	
+    if(access(videodevice, O_RDWR) <0 ){
+	   printf("access %s failed\n",videodevice);
+	   hasstoped = 1;
+	   return -1;
+     }
+	  
+	if (CameraCreate() == 0)
+	{
+		if (CameraStart(v4l2Buffer_phy_addr, 4, preview_w,preview_h) == 0)
+		{
+			/*if (DispCreate(corx ,cory,preWidth,preHeight) == 0)
+			{
+				TaskRuning(1,corx,cory);
+			}
+			else
+			{
+				//tc_info->result = -1;
+				printf("%s display create wrong!\n",__FUNCTION__);
+			}*/
+		}
+		else
+		{
+			ret = -1;
+			printf("%s camera %d start erro\n",__FUNCTION__,cameraId);
+		}
+	}
+	else
+	{
+		ret = -1;
+		printf("%s camera %d create erro\n",__FUNCTION__,cameraId);
+	}
+	//isstoped = 1;
+	hasstoped = 1;
+	printf("camrea%d test over\n",cameraId);
+	return ret;
+}
+
+int stopCamera(){
+	
+	sprintf(videodevice,"/dev/video%d",(cam_id%2));
+	if(access(videodevice, O_RDWR) <0 ){
+	   printf("access %s failed,so dont't switch to camera %d\n",videodevice,(cam_id%2));
+	   return 0;
+	 }
+	printf("%s enter stop -----\n",__func__);
+	
+	struct v4l2_requestbuffers creqbuf;
+    creqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    isstoped =1;
+
+	
+	if (iCamFd > 0) {
+	    if (ioctl(iCamFd, VIDIOC_STREAMOFF, &creqbuf.type) == -1) {
+	        printf("%s VIDIOC_STREAMOFF Failed\n", __FUNCTION__);
+	   //     return -1;
+	    }		
+	}
+
+	if (iCamFd > 0) {
+		close(iCamFd);
+		iCamFd = 0;
+	}
+	printf("\n%s: stop ok!\n",__func__);
+	return 0;
+}
+
+int startCameraTest(){
+    	int err[2] = {0,0};
+	
+	if(tc_info->y <= 0)
+		tc_info->y  = get_cur_print_y();
+
+	ui_print_xy_rgba(0, tc_info->y , 255, 255, 0, 255, "%s:[%s..]\n", PCBA_CAMERA,
+		PCBA_TESTING);
+	
+    	for (int i = 0; i < camera_num; i++) {
+	    	err[i] = startCamera();
+		sleep(1);
+		stopCamera();
+		sleep(1);
+	}
+
+	for(int i = 0; i < 4; i++){
+		freebuf_drm(&drmbuf[i]);
+	}
+	
+	if (camera_num > 1) {
+        	if (err[0] < 0 || err[1] < 0)
+            		ui_print_xy_rgba(0,tc_info->y,255,0,0,255, "Back Camera:[%s] { ID:0x%x } Front Camera:[%s] { ID:0x%x }\n",err[0] < 0 ? PCBA_FAILED : PCBA_SECCESS,0
+                ,err[1] < 0 ? PCBA_FAILED : PCBA_SECCESS,1);
+        else
+		ui_print_xy_rgba(0,tc_info->y,0,255,0,255, "Back Camera:[%s] { ID:0x%x } Front Camera:[%s] { ID:0x%x }\n",err[0] < 0 ? PCBA_FAILED : PCBA_SECCESS,0
+		,err[1] < 0 ? PCBA_FAILED : PCBA_SECCESS,1);
+	} else {
+        	if (err[0] < 0)
+            		ui_print_xy_rgba(0,tc_info->y,255,0,0,255, "Back Camera:[%s] { ID:0x%x }\n",err[0] < 0 ? PCBA_FAILED : PCBA_SECCESS,0);
+        	else
+			ui_print_xy_rgba(0,tc_info->y,0,255,0,255, "Back Camera:[%s] { ID:0x%x }\n",err[0] < 0 ? PCBA_FAILED : PCBA_SECCESS,0);
+	}
+	return 0;
+}
+
+#else
+
+
 int Camera_Click_Event(int x,int y)
 {	
 	struct list_head *pos;
@@ -862,7 +1393,7 @@ int get_camera_size()
 		,camera_w,camera_h,camera_x,camera_y);
 	return 0;
 }
-
+#endif
 
 void * camera_test(void *argc)
 {
