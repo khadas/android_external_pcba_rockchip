@@ -242,7 +242,11 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion librkwifi-ctrl libdl libhardware libgralloc_drm libdrm libdrm_rockchip
+ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3126c)
+LOCAL_SHARED_LIBRARIES += libdl libhardware libgralloc_drm libdrm libdrm_rockchip
+endif
+
+LOCAL_SHARED_LIBRARIES += libz libc libcutils libutils libion librkwifi-ctrl
 LOCAL_STATIC_LIBRARIES += libm
 LOCAL_STATIC_LIBRARIES += libmincrypt
 LOCAL_STATIC_LIBRARIES += libminuitwrp libpixelflinger_twrp libpng libjpegtwrp
