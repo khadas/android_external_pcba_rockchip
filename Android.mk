@@ -48,8 +48,10 @@ ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3399)
 LOCAL_CFLAGS += -DRK3399_PCBA
 endif
 
+LOCAL_CFLAGS += -D$(strip $(TARGET_BOARD_PLATFORM))_PCBA
+
 ifeq ($(strip $(BOARD_USE_DRM)), true)
-ifneq ($(filter rk3368 rk3399 rk3288 rk3366 rk3126c, $(strip $(TARGET_BOARD_PLATFORM))), )
+ifneq ($(filter rk3368 rk3399 rk3288 rk3366 rk3126c rk3326, $(strip $(TARGET_BOARD_PLATFORM))), )
 LOCAL_CFLAGS +=-DRK_DRM_GRALLOC=1
 endif
 endif
@@ -108,7 +110,7 @@ LOCAL_SRC_FILES += \
     rk32_codec/codec_test.c
     #rk3288-camera/camera_test.c
 else
-ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3126c)
+ifneq ($(filter rk3126c rk3326, $(strip $(TARGET_BOARD_PLATFORM))), )
 LOCAL_CFLAGS += -DRK312X_PCBA
 LOCAL_SRC_FILES += \
     alsa_mixer.c \
@@ -242,7 +244,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3126c)
+ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3126c rk3326), )
 LOCAL_SHARED_LIBRARIES += libdl libhardware libgralloc_drm libdrm libdrm_rockchip
 endif
 

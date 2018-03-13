@@ -6,11 +6,18 @@ LOCAL_SRC_FILES := graphics.c graphics_adf.c graphics_drm.c graphics_fbdev.c eve
 
 LOCAL_C_INCLUDES +=\
     external/libpng\
-    external/zlib
+    external/zlib\
+    external/libdrm/include/drm\
+    external/libdrm
+
 
 LOCAL_WHOLE_STATIC_LIBRARIES += libadf
 
+ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3326)
+LOCAL_WHOLE_SHARED_LIBRARIES += libdrm
+else
 LOCAL_WHOLE_STATIC_LIBRARIES += libdrm
+endif
 LOCAL_WHOLE_STATIC_LIBRARIES += libpixelflinger_twrp
 
 LOCAL_MODULE := libminuitwrp

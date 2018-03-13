@@ -11,7 +11,7 @@
 #define EMMCPATH0 "/sys/bus/mmc/devices/mmc0:0001/block/mmcblk0/size"
 #define EMMCPATH1 "/sys/bus/mmc/devices/mmc1:0001/block/mmcblk1/size"
 
-#if defined(RK3399_PCBA) || defined(RK3368_PCBA)
+#if defined(RK3399_PCBA) || defined(RK3368_PCBA) || defined(rk3326_PCBA)
 #define READ_DDR_COMMAND "cat /proc/zoneinfo | busybox grep present | \
 				busybox awk '{print $2}'"
 #else
@@ -98,7 +98,7 @@ void *ddr_emmc_test(void *argv)
 	ddr_ret = ddr_exec(READ_DDR_COMMAND,
 		ddrsize_char, sizeof(ddrsize_char));
 	if (ddr_ret >= 0) {
-		ddr_size = (int)(atoi(ddrsize_char)*4/1024/1024);
+		ddr_size = (int)(atoi(ddrsize_char)*4/1024);
 		/* printf("=========== ddr_zize is : %dGB
 			==========\n",ddr_size);*/
 	}
@@ -130,13 +130,13 @@ void *ddr_emmc_test(void *argv)
 			PCBA_EMMC, emmc_size);
 	} else if (ddr_ret >= 0 && emmc_ret < 0) {
 		ui_print_xy_rgba(0, tc_info->y, 255, 0, 0, 255,
-			"%s:[%s] { %s:%dGB,%s:%s }\n",
+			"%s:[%s] { %s:%dMB,%s:%s }\n",
 			PCBA_DDR_EMMC, PCBA_FAILED,
 			PCBA_DDR, ddr_size,
 			PCBA_EMMC, PCBA_FAILED);
 	} else {
 		ui_print_xy_rgba(0, tc_info->y, 0, 255, 0, 255,
-			"%s:[%s] { %s:%dGB,%s:%dGB }\n",
+			"%s:[%s] { %s:%dMB,%s:%dGB }\n",
 			PCBA_DDR_EMMC, PCBA_SECCESS,
 			PCBA_DDR, ddr_size,
 			PCBA_EMMC, emmc_size);
