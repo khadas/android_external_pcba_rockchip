@@ -280,12 +280,12 @@ void gr_fill(int x, int y, int w, int h)
 {
     GGLContext *gl = gr_context;
 
-    if(gr_is_curr_clr_opaque)
+    //if(gr_is_curr_clr_opaque)
         gl->disable(gl, GGL_BLEND);
 
     gl->recti(gl, x, y, x + w, y + h);
 
-    if(gr_is_curr_clr_opaque)
+    //if(gr_is_curr_clr_opaque)
         gl->enable(gl, GGL_BLEND);
 }
 
