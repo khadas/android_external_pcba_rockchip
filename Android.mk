@@ -110,7 +110,7 @@ LOCAL_SRC_FILES += \
     rk32_codec/codec_test.c
     #rk3288-camera/camera_test.c
 else
-ifneq ($(filter rk3126c rk3326, $(strip $(TARGET_BOARD_PLATFORM))), )
+ifneq ($(filter rk3126c rk3326 rk3399, $(strip $(TARGET_BOARD_PLATFORM))), )
 LOCAL_CFLAGS += -DRK312X_PCBA
 LOCAL_SRC_FILES += \
     alsa_mixer.c \
@@ -244,7 +244,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3126c rk3326), )
+ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3126c rk3326 rk3399), )
 LOCAL_SHARED_LIBRARIES += libdl libhardware libgralloc_drm libdrm libdrm_rockchip
 endif
 
