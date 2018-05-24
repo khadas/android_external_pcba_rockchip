@@ -37,6 +37,7 @@
 #define PCBA_CODEC_VOL_UP "录音和扬声器测试中..."
 #define PCBA_CODEC_VOL_DOWN "耳机录音和播放测试中..."
 #define PCBA_CODEC_VOL_POWER "听筒测试中..."
+#define PCBA_RINGMIC "MIC阵列"
 #define PCBA_DDR	"内存"
 #define PCBA_DDR_EMMC "设备内存"
 #define PCBA_LCD "屏幕"

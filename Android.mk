@@ -63,7 +63,6 @@ ROTATE_SCREEN := 0
 #ROTATE_SCREEN := 180
 #ROTATE_SCREEN := 270
 
-
 LOCAL_SRC_FILES := \
     pre_test.c \
     ui.c \
@@ -101,6 +100,10 @@ LOCAL_SRC_FILES := \
     sensor_test.c \
     ddr_emmc_test.c
 
+ifeq ($(RINGMIC_TEST), true)
+LOCAL_SRC_FILES += echo_ringmic_test.c record_test.c vibrate_test.c
+LOCAL_CFLAGS += -DRINGMIC_TEST
+endif
 ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3288)
 LOCAL_CFLAGS += -DRK3288_PCBA
 LOCAL_SRC_FILES += \

@@ -49,7 +49,9 @@
 #include <signal.h>
 #include "language.h"
 #include "sensor_test.h"
-
+#ifdef RINGMIC_TEST
+#include "ringmic_test.h"
+#endif
 #ifdef RK3288_PCBA
 #include "rk3288-camera/camera_test.h"
 #elif defined RK312X_PCBA
@@ -119,6 +121,9 @@ int screen_err = -1;
 pthread_t codec_tid;
 char *codec_res;
 struct codec_msg *codec_msg;
+
+pthread_t ringmic_tid;
+char *ringmic_res;
 
 pthread_t key_tid;
 char *key_res;
@@ -388,7 +393,18 @@ int start_test_pthread(struct testcase_info *tc_info)
 			       strerror(err));
 			return -1;
 		}
-	} else if (!strcmp(tc_info->base_info->name, "Key")) {
+	}
+#ifdef RINGMIC_TEST
+	else if (!strcmp(tc_info->base_info->name, "RingMic")) {
+		err = pthread_create(&ringmic_tid, NULL, ringmic_test, tc_info);
+		if (err != 0) {
+			printf("create codec test thread error: %s/n",
+			       strerror(err));
+			return -1;
+		}
+	}
+#endif
+	else if (!strcmp(tc_info->base_info->name, "Key")) {
 		err = pthread_create(&key_tid, NULL, key_test, tc_info);
 		if (err != 0) {
 			printf("create key test thread error: %s/n",

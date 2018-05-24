@@ -34,6 +34,7 @@
 #define PCBA_CODEC_VOL_UP "INT_MIC/LS testing"
 #define PCBA_CODEC_VOL_DOWN "EXT_MIC/HS testing"
 #define PCBA_CODEC_VOL_POWER "EP testing"
+#define PCBA_RINGMIC "RIingMic"
 #define PCBA_DDR "DDR"
 #define PCBA_EMMC "eMMC"
 #define PCBA_NAND "Nand"
