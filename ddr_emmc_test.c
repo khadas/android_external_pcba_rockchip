@@ -8,9 +8,6 @@
 #include "language.h"
 #include "ddr_emmc_test.h"
 
-#define EMMCPATH0 "/sys/bus/mmc/devices/mmc0:0001/block/mmcblk0/size"
-#define EMMCPATH1 "/sys/bus/mmc/devices/mmc1:0001/block/mmcblk1/size"
-
 #if defined(RK3399_PCBA) || defined(RK3368_PCBA) || defined(rk3326_PCBA)
 #define READ_DDR_COMMAND "cat /proc/zoneinfo | busybox grep present | \
 				busybox awk '{print $2}'"
@@ -19,7 +16,10 @@
 				busybox awk 'BEGIN{a=0}{a+=$2}END{print a}'"
 #endif
 
-
+static char *emmc_path_name[] = { "/sys/bus/mmc/devices/mmc0:0001/block/mmcblk0/size",
+									"/sys/bus/mmc/devices/mmc1:0001/block/mmcblk1/size",
+									"/sys/bus/mmc/devices/mmc2:0001/block/mmcblk2/size"
+								};
 
 /* for ddr  */
 int ddr_exec(const char *cmd, char *tmp, unsigned int length)
@@ -86,6 +86,8 @@ void *ddr_emmc_test(void *argv)
 	int ddr_ret = 0;
 	char ddrsize_char[20];
 	int ddr_size = 0;
+	int emmc_path_size = 0;
+	int i = 0;
 
 	if (tc_info->y <= 0)
 		tc_info->y = get_cur_print_y();
@@ -105,15 +107,16 @@ void *ddr_emmc_test(void *argv)
 
 	/* For emmc */
 	memset(emmcsize_char, 0, sizeof(emmcsize_char));
-	emmc_ret = readFromFile(EMMCPATH0, emmcsize_char, sizeof(emmcsize_char));
-	if (emmc_ret < 0) {
-		emmc_ret = readFromFile(EMMCPATH1, emmcsize_char, sizeof(emmcsize_char));
-	}
-	if (emmc_ret >= 0) {  /*read back normal*/
-		emmc_size = get_emmc_size(emmcsize_char);
-		if (emmc_size < 0)
-			emmc_ret = -1;
-		/* printf("=======  emmc_size is: %d  ========\n",emmc_size);*/
+	emmc_path_size = sizeof(emmc_path_name)/sizeof(*emmc_path_name);
+	for (i=0; i < emmc_path_size ;i++) {
+		emmc_ret = readFromFile(emmc_path_name[i], emmcsize_char, sizeof(emmcsize_char));
+		if (emmc_ret >= 0) {  /*read back normal*/
+			emmc_size = get_emmc_size(emmcsize_char);
+			if (emmc_size < 0) {
+				emmc_ret = -1;
+			}
+			break;
+		}
 	}
 
 	if (ddr_ret < 0 && emmc_ret < 0) {
