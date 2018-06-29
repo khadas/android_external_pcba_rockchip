@@ -16,7 +16,8 @@
 				busybox awk 'BEGIN{a=0}{a+=$2}END{print a}'"
 #endif
 
-static char *emmc_path_name[] = { "/sys/bus/mmc/devices/mmc0:0001/block/mmcblk0/size",
+static char *emmc_path_name[] = { 	"/sys/block/rknand0/size",
+									"/sys/bus/mmc/devices/mmc0:0001/block/mmcblk0/size",
 									"/sys/bus/mmc/devices/mmc1:0001/block/mmcblk1/size",
 									"/sys/bus/mmc/devices/mmc2:0001/block/mmcblk2/size"
 								};
@@ -88,6 +89,7 @@ void *ddr_emmc_test(void *argv)
 	int ddr_size = 0;
 	int emmc_path_size = 0;
 	int i = 0;
+	char flash_type_name[20] = "null";
 
 	if (tc_info->y <= 0)
 		tc_info->y = get_cur_print_y();
@@ -105,7 +107,7 @@ void *ddr_emmc_test(void *argv)
 			==========\n",ddr_size);*/
 	}
 
-	/* For emmc */
+	/* For flash */
 	memset(emmcsize_char, 0, sizeof(emmcsize_char));
 	emmc_path_size = sizeof(emmc_path_name)/sizeof(*emmc_path_name);
 	for (i=0; i < emmc_path_size ;i++) {
@@ -114,6 +116,11 @@ void *ddr_emmc_test(void *argv)
 			emmc_size = get_emmc_size(emmcsize_char);
 			if (emmc_size < 0) {
 				emmc_ret = -1;
+			}
+			if (i==0) {
+				strcpy(flash_type_name, PCBA_NAND);
+			}else {
+				strcpy(flash_type_name, PCBA_EMMC);
 			}
 			break;
 		}
@@ -124,25 +131,25 @@ void *ddr_emmc_test(void *argv)
 			"%s:[%s] { %s:%s,%s:%s }\n",
 				PCBA_DDR_EMMC, PCBA_FAILED,
 				PCBA_DDR, PCBA_FAILED,
-				PCBA_EMMC, PCBA_FAILED);
+				flash_type_name, PCBA_FAILED);
 	} else if (ddr_ret < 0 && emmc_ret >= 0) {
 		ui_print_xy_rgba(0, tc_info->y, 255, 0, 0, 255,
 			"%s:[%s] { %s:%s,%s:%dGB }\n",
 			PCBA_DDR_EMMC, PCBA_FAILED,
 			PCBA_DDR, PCBA_FAILED,
-			PCBA_EMMC, emmc_size);
+			flash_type_name, emmc_size);
 	} else if (ddr_ret >= 0 && emmc_ret < 0) {
 		ui_print_xy_rgba(0, tc_info->y, 255, 0, 0, 255,
 			"%s:[%s] { %s:%dMB,%s:%s }\n",
 			PCBA_DDR_EMMC, PCBA_FAILED,
 			PCBA_DDR, ddr_size,
-			PCBA_EMMC, PCBA_FAILED);
+			flash_type_name, PCBA_FAILED);
 	} else {
 		ui_print_xy_rgba(0, tc_info->y, 0, 255, 0, 255,
 			"%s:[%s] { %s:%dMB,%s:%dGB }\n",
 			PCBA_DDR_EMMC, PCBA_SECCESS,
 			PCBA_DDR, ddr_size,
-			PCBA_EMMC, emmc_size);
+			flash_type_name, emmc_size);
 
 		tc_info->result = 1;
 		return argv;

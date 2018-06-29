@@ -158,15 +158,28 @@ void *screen_test(void *argv)
 
 	ui_print_xy_rgba(0, tc_info->y, 255, 255, 0, 255, "%s\n", PCBA_LCD);
 	lcd_y = tc_info->y;
+	int x,y,w,h;
+	x = gr_fb_width();
+	y = gr_fb_height();
+	if (x > y) {
+		x = gr_fb_width() - gr_fb_height()/3;
+		y = 0;
+		w = gr_fb_height()/3;
+		h = gr_fb_height()/3;
 
-	int x =  gr_fb_width() >> 1;
-	int y = (gr_fb_height()*2)/3;
-	int w =  gr_fb_width() >> 1;
-	int h = gr_fb_height()/3;
+		FillColor(255, 0, 0, 255, x, y, w, h);
+		FillColor(0, 255, 0, 255, x, y+h, w, h);
+		FillColor(0, 0, 255, 255, x, y+(2*h), w, h);
+	} else {
+		x = 0;
+		y = gr_fb_height() - gr_fb_width()/3;;
+		w = gr_fb_width()/3;
+		h = gr_fb_width()/3;
 
-	FillColor(255, 0, 0, 255, x, y, w/3, h);
-	FillColor(0, 255, 0, 255, x+w/3, y, w/3, h);
-	FillColor(0, 0, 255, 255, x+(2*w)/3, y, w/3, h);
+		FillColor(255, 0, 0, 255, x, y, w, h);
+		FillColor(0, 255, 0, 255, x+w, y, w, h);
+		FillColor(0, 0, 255, 255, x+(2*w), y, w, h);
+	}
 	sleep(3);
 
 	tc_info->result = 0;
