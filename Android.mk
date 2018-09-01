@@ -110,10 +110,15 @@ LOCAL_SRC_FILES += \
     rk32_codec/alsa_mixer.c \
     rk32_codec/alsa_pcm.c \
     rk32_codec/alsa_route.c \
-    rk32_codec/codec_test.c
-    #rk3288-camera/camera_test.c
+    rk32_codec/codec_test.c \
+    rk3288-camera/camera_test.c \
+    rk3288-camera/OV13850_MIPI.c \
+    rk3288-camera/OV5648_MIPI.c \
+    rk3288-camera/GC2155_CIF.c \
+    rk3288-camera/GC2145_CIF.c \
+    rk3288-camera/GC0329_CIF.c
 else
-ifneq ($(filter rk3126c rk3326 rk3399, $(strip $(TARGET_BOARD_PLATFORM))), )
+ifneq ($(filter rk3126c rk3326, $(strip $(TARGET_BOARD_PLATFORM))), )
 LOCAL_CFLAGS += -DRK312X_PCBA
 LOCAL_SRC_FILES += \
     alsa_mixer.c \
@@ -133,10 +138,24 @@ LOCAL_SRC_FILES += \
     rk3368-camera/GC2145_CIF.c \
     rk3368-camera/GC0329_CIF.c
 else
+ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3399)
+LOCAL_CFLAGS += -DRK3399_PCBA
+LOCAL_SRC_FILES += \
+    alsa_mixer.c \
+    alsa_pcm.c \
+    codec_test.c \
+    rk3399-camera/camera_test.c \
+    rk3399-camera/OV13850_MIPI.c \
+    rk3399-camera/OV5648_MIPI.c \
+    rk3368-camera/GC2155_CIF.c \
+    rk3368-camera/GC2145_CIF.c \
+    rk3368-camera/GC0329_CIF.c
+else
 LOCAL_SRC_FILES += \
     alsa_mixer.c \
     alsa_pcm.c \
     codec_test.c
+endif # ($(strip $(TARGET_BOARD_PLATFORM)), rk3399)
 endif # ($(strip $(TARGET_BOARD_PLATFORM)), rk3368)
 endif # ($(strip $(TARGET_BOARD_PLATFORM)), rk312x)
 endif # ($(strip $(TARGET_BOARD_PLATFORM)), rk3288)
@@ -247,7 +266,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
-ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3126c rk3326 rk3399), )
+ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3126c rk3326 rk3399 rk3288), )
 LOCAL_SHARED_LIBRARIES += libdl libhardware libgralloc_drm libdrm libdrm_rockchip
 endif
 

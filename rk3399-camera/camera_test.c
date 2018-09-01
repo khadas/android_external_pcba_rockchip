@@ -293,11 +293,11 @@ int extdev_register(void)
     strlcpy((char*)extdev.afvdd.name, "NC",sizeof(extdev.afvdd.name));
     extdev.afvdd.min_uv = 0x0;
     extdev.afvdd.max_uv = 0x0;
-    strlcpy((char*)extdev.pwrdn.name, "RK30_PIN2_PB7",sizeof(extdev.pwrdn.name));
+    strlcpy((char*)extdev.pwrdn.name, "RK30_PIN1_PA4",sizeof(extdev.pwrdn.name));
     extdev.pwrdn.active = 0x00;
-    strlcpy((char*)extdev.pwren.name, "RK30_PIN0_PC1",sizeof(extdev.pwren.name));
+    strlcpy((char*)extdev.pwren.name, "NC",sizeof(extdev.pwren.name));
     extdev.pwren.active = 0x01;
-    strlcpy((char*)extdev.rst.name,"NC",sizeof(extdev.rst.name));
+    strlcpy((char*)extdev.rst.name,"RK30_PIN2_PB2",sizeof(extdev.rst.name));
 	extdev.rst.active = 0x0;
     strlcpy((char*)extdev.afpwrdn.name,"NC",sizeof(extdev.afpwrdn.name));
 	extdev.afpwrdn.active = 0x0;

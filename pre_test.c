@@ -58,6 +58,8 @@
 #include "rk312x-camera/camera_test.h"
 #elif defined RK3368_PCBA
 #include "rk3368-camera/camera_test.h"
+#elif defined RK3399_PCBA
+#include "rk3399-camera/camera_test.h"
 #endif
 
 #include "lightsensor_test.h"
