@@ -7,7 +7,7 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <linux/rtc.h>
-#include <linux/android_alarm.h>
+//#include <linux/android_alarm.h>
 
 #include "common.h"
 #include "rtc_test.h"

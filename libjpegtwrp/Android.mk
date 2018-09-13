@@ -1,7 +1,7 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_CFLAGS += -w
+LOCAL_CFLAGS += -w -Wno-error
 
 LOCAL_ARM_MODE := arm
 

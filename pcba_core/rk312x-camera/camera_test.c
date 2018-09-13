@@ -1,6 +1,6 @@
 #include <hardware/rga.h>
 #include "camera_test.h"
-#include "../minui_pcba/minui.h"
+#include <minui.h>
 #include "../test_case.h"
 #define VIDEO_DEV_NAME   "/dev/video0"
 #define PMEM_DEV_NAME    "/dev/pmem_cam"

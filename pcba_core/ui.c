@@ -27,7 +27,7 @@
 #include "common.h"
 #include "tw_reboot.h"
 
-#include "minui_pcba/minui.h"
+#include <minui.h>
 
 #include "recovery_ui.h"
 #include "themes.h"

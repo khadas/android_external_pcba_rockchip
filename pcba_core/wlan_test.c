@@ -30,6 +30,7 @@
 #include "wlan_test.h"
 #include "test_case.h"
 #include "language.h"
+#include <hardware_legacy/rk_wifi.h>
 
 #define TAG	"[PCBA,WIFI]: "
 #define LOG(x...)	printf(TAG x)

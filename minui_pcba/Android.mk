@@ -4,17 +4,18 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := graphics.c graphics_adf.c graphics_drm.c graphics_fbdev.c events.c \
 	resources.c
 
+LOCAL_CFLAGS += -Wno-error -Wno-implicit-function-declaration
+
 LOCAL_C_INCLUDES +=\
-    external/libpng\
-    external/zlib\
-    external/libdrm/include/drm\
-    external/libdrm
+    $(LOCAL_PATH)/include
 
-
+LOCAL_SHARED_LIBRARIES := libpng libz
 LOCAL_WHOLE_STATIC_LIBRARIES += libadf
+LOCAL_EXPORT_C_INCLUDE_DIRS := \
+	$(LOCAL_PATH)/include
 
 ifneq ($(filter $(strip $(TARGET_BOARD_PLATFORM)), rk3326 rk3399), )
-LOCAL_WHOLE_SHARED_LIBRARIES += libdrm
+LOCAL_SHARED_LIBRARIES += libdrm
 else
 LOCAL_WHOLE_STATIC_LIBRARIES += libdrm
 endif
@@ -61,6 +62,8 @@ endif
 ifeq ($(strip $(TARGET_ARCH)), arm64)
   LOCAL_CFLAGS += -DTARGET_ARCH_64
 endif
+
+LOCAL_CFLAGS += -Wno-error
 
 include $(BUILD_STATIC_LIBRARY)
 

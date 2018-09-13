@@ -15,7 +15,7 @@
 #include <inttypes.h>
 #include <errno.h>
 
-#include "minui_pcba/minui.h"
+#include <minui.h>
 
 #include "recovery_ui.h"
 #include "rtc_test.h"

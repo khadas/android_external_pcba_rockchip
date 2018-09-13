@@ -6,16 +6,15 @@ LOCAL_C_INCLUDES += \
     bionic \
     external/stlport/stlport \
     $(LOCAL_PATH)/Language \
-    external/libpng/
 
-LOCAL_CFLAGS += -w
+LOCAL_CFLAGS += -w -Wno-error -Wno-implicit-function-declaration
 
 LOCAL_SRC_FILES := \
     alsa_pcm.c \
     alsa_mixer.c \
     codec_test.c \
     codec_main.c
-
+LOCAL_SHARED_LIBRARIES := libpng
 LOCAL_MODULE_TAGS := optional
 LOCAL_STATIC_LIBRARIES := libc libcutils liblog
 include $(BUILD_EXECUTABLE)
@@ -24,7 +23,6 @@ commands_recovery_local_path := $(LOCAL_PATH)
 
 # =====================================================
 include $(CLEAR_VARS)
-
 
 BOARD_HAS_NO_REAL_SDCARD := true
 TW_INTERNAL_STORAGE_PATH := "/mnt/sdcard"
@@ -38,7 +36,7 @@ LOCAL_C_INCLUDES += \
     external/stlport/stlport \
     $(LOCAL_PATH)/Language
 
-LOCAL_CFLAGS += -w
+LOCAL_CFLAGS += -w -Wno-error
 
 ifeq ($(strip $(TARGET_BOARD_PLATFORM)), rk3368)
 LOCAL_CFLAGS += -DRK3368_PCBA
@@ -280,9 +278,3 @@ LOCAL_STATIC_LIBRARIES += libmtdutils liblog
 LOCAL_C_INCLUDES += system/core/libpixelflinger/include
 
 include $(BUILD_EXECUTABLE)
-include $(commands_recovery_local_path)/minui_pcba/Android.mk
-include $(commands_recovery_local_path)/libpixelflinger/Android.mk
-include $(commands_recovery_local_path)/libjpegtwrp/Android.mk
-include $(commands_recovery_local_path)/minziptwrp/Android.mk
-#include $(commands_recovery_local_path)/libbluetooth/Android.mk
-#include $(commands_recovery_local_path)/bluedroidtest/Android.mk

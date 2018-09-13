@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <linux/android_alarm.h>
+//#include <linux/android_alarm.h>
 #include <linux/rtc.h>
 #include <termios.h>
 

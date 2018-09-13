@@ -5,7 +5,7 @@
 #include "test_case.h"
 #include "common.h"
 #include "language.h"
-#include "minui_pcba/minui.h"
+#include <minui.h>
 
 #include <linux/input.h>
 #include "script.h"

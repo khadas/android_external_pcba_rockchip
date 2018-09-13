@@ -25,6 +25,7 @@
 #include <sys/types.h>
 
 #include <linux/input.h>
+#include <cutils/properties.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

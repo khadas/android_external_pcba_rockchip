@@ -24,7 +24,7 @@
 
 #include <linux/input.h>
 
-#include "../common.h"
+#include "common.h"
 
 #include "minui.h"
 

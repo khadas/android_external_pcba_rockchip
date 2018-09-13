@@ -47,7 +47,7 @@
 //#include "install.h"
 
 #ifdef BOARD_USE_DRM
-#include "minui_pcba/minui.h"
+#include <minui.h>
 #else
 #include "minuitwrp/minui.h"
 #endif
