@@ -30,6 +30,7 @@
 
 #include "minui.h"
 #include "graphics.h"
+#include "libdrm_macros.h"
 #include <pixelflinger/pixelflinger.h>
 
 #define ARRAY_SIZE(A) (sizeof(A)/sizeof(*(A)))
@@ -216,7 +217,7 @@ static struct drm_surface *drm_create_surface(int width, int height) {
                               drm_fd, map_dumb.offset);
 #else
     surface->base.data = (unsigned char*)
-                         mmap(NULL,
+                         drm_mmap(NULL,
                               surface->base.height * surface->base.row_bytes,
                               PROT_READ | PROT_WRITE, MAP_SHARED,
                               drm_fd, map_dumb.offset);

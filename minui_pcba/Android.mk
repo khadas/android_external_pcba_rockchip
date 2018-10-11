@@ -7,7 +7,8 @@ LOCAL_SRC_FILES := graphics.c graphics_adf.c graphics_drm.c graphics_fbdev.c eve
 LOCAL_CFLAGS += -Wno-error -Wno-implicit-function-declaration
 
 LOCAL_C_INCLUDES +=\
-    $(LOCAL_PATH)/include
+    $(LOCAL_PATH)/include \
+    external/libdrm
 
 LOCAL_SHARED_LIBRARIES := libpng libz
 LOCAL_WHOLE_STATIC_LIBRARIES += libadf
