@@ -28,15 +28,15 @@ mkdir -p $PRODUCT_OUT/recovery/root/lib/firmware
 mkdir -p $PRODUCT_OUT/recovery/root/vendor/lib/modules/wifi
 mkdir -p $PRODUCT_OUT/recovery/root/data/misc/wifi/
 
-if [ -e "$PRODUCT_OUT/vendor/etc/firmware/" ] ; then
-cp -rf $PRODUCT_OUT/vendor/etc/firmware/ $PRODUCT_OUT/recovery/root/vendor/etc/ -a
-fi
-if [ -e "$PRODUCT_OUT/vendor/lib/modules/" ] ; then
-cp -rf $PRODUCT_OUT/vendor/lib/modules/wifi/ $PRODUCT_OUT/recovery/root/vendor/lib/modules/ -a
+#create wifi ko
+source $PCBA_PATH/build_wifi_ko.sh $TARGET_ARCH $PRODUCT_OUT
+
+if [ -e "vendor/rockchip/common/wifi/firmware" ] ; then
+cp -rf vendor/rockchip/common/wifi/firmware/ $PRODUCT_OUT/recovery/root/vendor/etc/ -a
 fi
 
-if [ -e "$PRODUCT_OUT/vendor/etc/bluetooth/bt_vendor.conf" ] ; then
-cp $PRODUCT_OUT/vendor/etc/bluetooth/bt_vendor.conf $PRODUCT_OUT/recovery/root/vendor/etc/bluetooth/
+if [ -e "hardware/broadcom/libbt/conf/rockchip/rksdk/bt_vendor.conf" ] ; then
+cp hardware/broadcom/libbt/conf/rockchip/rksdk/bt_vendor.conf $PRODUCT_OUT/recovery/root/vendor/etc/bluetooth/
 fi
 
 ############################################### bin/lib ##################################################
@@ -115,24 +115,26 @@ cp $PRODUCT_OUT/system/lib/libvndksupport.so $PRODUCT_OUT/recovery/root/vendor/l
 fi
 
 #for wifi test
-if [ -e "$PRODUCT_OUT/vendor/lib/librkwifi-ctrl.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/librkwifi-ctrl.so $PRODUCT_OUT/recovery/root/vendor/lib/
+if [ -e "$PLATFORM_LIB_PATH/librkwifi-ctrl.so" ] ; then
+cp $PLATFORM_LIB_PATH/librkwifi-ctrl.so $PRODUCT_OUT/recovery/root/vendor/lib/
 fi
 
-if [ -e "$PRODUCT_OUT/vendor/lib/libdrm.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/libdrm.so $PRODUCT_OUT/recovery/root/vendor/lib/
+if [ -e "$PLATFORM_LIB_PATH/libdrm.so" ] ; then
+cp $PLATFORM_LIB_PATH/libdrm.so $PRODUCT_OUT/recovery/root/vendor/lib/
 fi
-if [ -e "$PRODUCT_OUT/vendor/lib/libdrm_rockchip.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/libdrm_rockchip.so $PRODUCT_OUT/recovery/root/vendor/lib/
+if [ -e "$PLATFORM_LIB_PATH/libdrm_rockchip.so" ] ; then
+cp $PLATFORM_LIB_PATH/libdrm_rockchip.so $PRODUCT_OUT/recovery/root/vendor/lib/
 fi
-if [ -e "$PRODUCT_OUT/system/lib/libGLESv1_CM.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libGLESv1_CM.so $PRODUCT_OUT/recovery/root/vendor/lib/
+if [ -e "$PLATFORM_LIB_PATH/libGLESv1_CM.so" ] ; then
+cp $PLATFORM_LIB_PATH/libGLESv1_CM.so $PRODUCT_OUT/recovery/root/vendor/lib/
 fi
-if [ -e "$PRODUCT_OUT/vendor/lib/libgralloc_drm.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/libgralloc_drm.so $PRODUCT_OUT/recovery/root/vendor/lib/
+if [ -e "$PLATFORM_LIB_PATH/libgralloc_drm.so" ] ; then
+cp $PLATFORM_LIB_PATH/libgralloc_drm.so $PRODUCT_OUT/recovery/root/vendor/lib/
 fi
-if [ -e "$PRODUCT_OUT/vendor/lib/hw/gralloc.rk30board.so" ] ; then
-cp $PRODUCT_OUT/vendor/lib/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/vendor/lib/hw/
+if [ -e "$PRODUCT_OUT/symbols/vendor/lib/hw/gralloc.rk30board.so" ] ; then
+cp $PRODUCT_OUT/symbols/vendor/lib/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/vendor/lib/hw/
+else
+cp $PLATFORM_LIB_PATH/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/vendor/lib/hw/
 fi
 if [ -e "$PRODUCT_OUT/system/lib/libhardware.so" ] ; then
 cp $PRODUCT_OUT/system/lib/libhardware.so $PRODUCT_OUT/recovery/root/vendor/lib/

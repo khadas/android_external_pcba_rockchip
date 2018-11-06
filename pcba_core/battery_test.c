@@ -235,11 +235,12 @@ int BatteryPathInit()
  	}
 
 	memset(Present, 0, sizeof(Present));
-	ret = readFromFile(gPaths.batteryPresentPath,
-		Present, sizeof(Present));
-	if ((ret < 0) || (Present[0] == '0'))
-		goto err;
-
+	if (gPaths.batteryPresentPath) {
+		ret = readFromFile(gPaths.batteryPresentPath,
+			Present, sizeof(Present));
+		if ((ret < 0) || (Present[0] == '0'))
+			goto err;
+	}
 	memset(Voltagebuf, 0, sizeof(Voltagebuf));
 	ret = readFromFile(gPaths.batteryVoltagePath,
 		Voltagebuf, sizeof(Voltagebuf));
