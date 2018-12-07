@@ -209,19 +209,11 @@ static struct drm_surface *drm_create_surface(int width, int height) {
     surface->base.row_bytes = create_dumb.pitch;
     surface->base.pixel_bytes = create_dumb.bpp / 8;
     surface->base.format = base_format;
-#if defined(TARGET_ARCH_64)
-    surface->base.data = (unsigned char*)
-                         mmap64(NULL,
-                              surface->base.height * surface->base.row_bytes,
-                              PROT_READ | PROT_WRITE, MAP_SHARED,
-                              drm_fd, map_dumb.offset);
-#else
     surface->base.data = (unsigned char*)
                          drm_mmap(NULL,
                               surface->base.height * surface->base.row_bytes,
                               PROT_READ | PROT_WRITE, MAP_SHARED,
                               drm_fd, map_dumb.offset);
-#endif
     if (surface->base.data == MAP_FAILED) {
         perror("mmap() failed");
         drm_destroy_surface(surface);

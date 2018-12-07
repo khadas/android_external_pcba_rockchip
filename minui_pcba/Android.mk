@@ -60,10 +60,6 @@ else
   LOCAL_CFLAGS += -DOVERSCAN_PERCENT=0
 endif
 
-ifeq ($(strip $(TARGET_ARCH)), arm64)
-  LOCAL_CFLAGS += -DTARGET_ARCH_64
-endif
-
 LOCAL_CFLAGS += -Wno-error
 
 include $(BUILD_STATIC_LIBRARY)

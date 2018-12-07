@@ -7,9 +7,9 @@ TARGET_ARCH=$4
 PCBA_PATH=external/pcba_rockchip/pcba_core
 
 if [ $TARGET_ARCH = "arm64" ] ; then
-PLATFORM_LIB_PATH=$PRODUCT_OUT/obj_arm/lib
+PLATFORM_LIB_PATH=$PRODUCT_OUT/obj_arm
 else
-PLATFORM_LIB_PATH=$PRODUCT_OUT/obj/lib
+PLATFORM_LIB_PATH=$PRODUCT_OUT/obj
 fi
 
 ############################################### wifi bt firmware ##################################################
@@ -40,102 +40,50 @@ cp hardware/broadcom/libbt/conf/rockchip/rksdk/bt_vendor.conf $PRODUCT_OUT/recov
 fi
 
 ############################################### bin/lib ##################################################
-
 cp -rf $PCBA_PATH/sbin/* $PRODUCT_OUT/recovery/root/vendor/bin/
 cp -rf $PCBA_PATH/sbin/* $PRODUCT_OUT/recovery/root/sbin/
 
+copy_lib() {
+    LIB_NAME=$1
+    ADDON_PATH=$2
+    if [ -e "$PLATFORM_LIB_PATH/SHARED_LIBRARIES/${LIB_NAME}_intermediates/$LIB_NAME.so" ] ; then
+        cp "$PLATFORM_LIB_PATH/SHARED_LIBRARIES/${LIB_NAME}_intermediates/$LIB_NAME.so" $PRODUCT_OUT/recovery/root/vendor/lib/$ADDON_PATH
+        #echo "$PLATFORM_LIB_PATH/SHARED_LIBRARIES/${LIB_NAME}_intermediates/$LIB_NAME.so is find!"
+        #echo "copy_lib to $PRODUCT_OUT/recovery/root/vendor/lib/$ADDON_PATH"
+    fi
+}
 
-if [ -e "$PRODUCT_OUT/system/bin/toolbox" ] ; then
-cp $PRODUCT_OUT/system/bin/toolbox $PRODUCT_OUT/recovery/root/vendor/bin/
+if [ -e "$PRODUCT_OUT/obj/EXECUTABLES/toolbox_intermediates/toolbox" ] ; then
+cp $PRODUCT_OUT/obj/EXECUTABLES/toolbox_intermediates/toolbox $PRODUCT_OUT/recovery/root/vendor/bin/
 fi
-if [ -e "$PRODUCT_OUT/system/bin/linker" ] ; then
-cp $PRODUCT_OUT/system/bin/linker $PRODUCT_OUT/recovery/root/vendor/bin/
+if [ -e "$PLATFORM_LIB_PATH/EXECUTABLES/linker_intermediates/linker" ] ; then
+cp $PLATFORM_LIB_PATH/EXECUTABLES/linker_intermediates/linker $PRODUCT_OUT/recovery/root/vendor/bin/
 fi
 if [ -e "$PRODUCT_OUT/recovery/root/sbin/sh" ] ; then
 cp $PRODUCT_OUT/recovery/root/sbin/sh $PRODUCT_OUT/recovery/root/vendor/bin/
 fi
 
-if [ -e "$PLATFORM_LIB_PATH/libselinux.so" ] ; then
-cp $PLATFORM_LIB_PATH/libselinux.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libusbhost.so" ] ; then
-cp $PLATFORM_LIB_PATH/libusbhost.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libc.so" ] ; then
-cp $PLATFORM_LIB_PATH/libc.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libz.so" ] ; then
-cp $PLATFORM_LIB_PATH/libz.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libcutils.so" ] ; then
-cp $PLATFORM_LIB_PATH/libcutils.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libutils.so" ] ; then
-cp $PLATFORM_LIB_PATH/libutils.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/liblog.so" ] ; then
-cp $PLATFORM_LIB_PATH/liblog.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libm.so" ] ; then
-cp $PLATFORM_LIB_PATH/libm.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libstdc++.so" ] ; then
-cp $$PLATFORM_LIB_PATH/libstdc++.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libc++.so" ] ; then
-cp $PLATFORM_LIB_PATH/libc++.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libdl.so" ] ; then
-cp $PLATFORM_LIB_PATH/libdl.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libbacktrace.so" ] ; then
-cp $PLATFORM_LIB_PATH/libbacktrace.so $PRODUCT_OUT/recovery/root/vendor/lib/
-else
-cp $PRODUCT_OUT/system/lib/libbacktrace.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libbase.so" ] ; then
-cp $PLATFORM_LIB_PATH/libbase.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libunwind.so" ] ; then
-cp $PLATFORM_LIB_PATH/libunwind.so $PRODUCT_OUT/recovery/root/vendor/lib/
-else
-cp $PRODUCT_OUT/system/lib/libunwind.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/liblzma.so" ] ; then
-cp $PLATFORM_LIB_PATH/liblzma.so $PRODUCT_OUT/recovery/root/vendor/lib/
-else
-cp $PRODUCT_OUT/system/lib/liblzma.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libion.so" ] ; then
-cp $PLATFORM_LIB_PATH/libion.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-
-if [ -e "$PRODUCT_OUT/system/lib/libvndksupport.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libvndksupport.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-
-#for wifi test
-if [ -e "$PLATFORM_LIB_PATH/librkwifi-ctrl.so" ] ; then
-cp $PLATFORM_LIB_PATH/librkwifi-ctrl.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-
-if [ -e "$PLATFORM_LIB_PATH/libdrm.so" ] ; then
-cp $PLATFORM_LIB_PATH/libdrm.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libdrm_rockchip.so" ] ; then
-cp $PLATFORM_LIB_PATH/libdrm_rockchip.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libGLESv1_CM.so" ] ; then
-cp $PLATFORM_LIB_PATH/libGLESv1_CM.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PLATFORM_LIB_PATH/libgralloc_drm.so" ] ; then
-cp $PLATFORM_LIB_PATH/libgralloc_drm.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
-if [ -e "$PRODUCT_OUT/symbols/vendor/lib/hw/gralloc.rk30board.so" ] ; then
-cp $PRODUCT_OUT/symbols/vendor/lib/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/vendor/lib/hw/
-else
-cp $PLATFORM_LIB_PATH/hw/gralloc.rk30board.so $PRODUCT_OUT/recovery/root/vendor/lib/hw/
-fi
-if [ -e "$PRODUCT_OUT/system/lib/libhardware.so" ] ; then
-cp $PRODUCT_OUT/system/lib/libhardware.so $PRODUCT_OUT/recovery/root/vendor/lib/
-fi
+copy_lib libselinux
+copy_lib libusbhost
+copy_lib libc
+copy_lib libz
+copy_lib libcutils
+copy_lib libutils
+copy_lib liblog
+copy_lib libm
+copy_lib libstdc++
+copy_lib libc++
+copy_lib libdl
+copy_lib libbacktrace
+copy_lib libbase
+copy_lib libunwind
+copy_lib liblzma
+copy_lib libion
+copy_lib libvndksupport
+copy_lib librkwifi-ctrl
+copy_lib libdrm
+copy_lib libdrm_rockchip
+copy_lib libGLESv1_CM
+copy_lib libgralloc_drm
+copy_lib gralloc.rk30board hw/
+copy_lib libhardware
