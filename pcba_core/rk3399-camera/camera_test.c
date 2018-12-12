@@ -1,5 +1,5 @@
 #include "camera_test.h"
-#include "../minui_pcba/minui.h"
+#include <minui.h>
 #include "../test_case.h"
 #include "sys_core_ion.h"
 #include <hardware/hardware.h>
